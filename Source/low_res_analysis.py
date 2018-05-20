@@ -4,23 +4,29 @@ import matplotlib.pyplot as plt
 from skimage import filters
 from skimage.measure import label, regionprops
 import cv2
-
+from skimage.exposure import rescale_intensity
+import numpy as np
+from image_display import display_image
 
 gaussian_std = 5
 image_size = 2048
 pixel_size = 0.64570
 
-
-
 def get_low_res_DAPI_image(name):
     '''
     Returns the DAPI image in the Low_Res_Input_Images folder as a 2d array
+    - converts to 8 bit from 16 bit
+    - rescales intensity
     
     '''
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     image_path = os.path.join(parent, "Low_Res_Input_Images", "DAPI", name)
     
-    return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+    image = io.imread(image_path)
+    image = (image/256).astype("uint8")
+    image = rescale_intensity(image)
+    
+    return image
 
 def get_low_res_a_tubulin_image(name):
     '''
@@ -40,13 +46,36 @@ def get_low_res_pattern_image(name):
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     image_path = os.path.join(parent, "Low_Res_Input_Images", "Pattern", name)
     
-    return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-
+    image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+    image = (image/256).astype("uint8")
+    
+    return image
 
 class Low_Res_Image:
     
     def __init__(self, image_file):
-        self.image_file = image_file
+        self.image_file = image_file        
+    
+    def detect_blobs(self):
+        params = cv2.SimpleBlobDetector_Params()
+        detector = cv2.SimpleBlobDetector_create(params)
+        
+        keypoints = detector.detect(255 - self.image_file)
+        
+        
+        print(keypoints[0].pt)
+    
+        
+        display_image(self.image_file)
+
+        
+        
+        
+
+
+#        print(blobs)
+#        
+
         
         
 
