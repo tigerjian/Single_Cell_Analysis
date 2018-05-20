@@ -3,9 +3,10 @@ import os
 import matplotlib.pyplot as plt
 from skimage import filters
 from skimage.measure import label, regionprops
+import cv2
 
 
-gaussian_std = 10
+gaussian_std = 5
 image_size = 2048
 pixel_size = 0.64570
 
@@ -19,7 +20,7 @@ def get_low_res_DAPI_image(name):
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     image_path = os.path.join(parent, "Low_Res_Input_Images", "DAPI", name)
     
-    return io.imread(image_path)
+    return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 
 def get_low_res_a_tubulin_image(name):
     '''
@@ -29,7 +30,7 @@ def get_low_res_a_tubulin_image(name):
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     image_path = os.path.join(parent, "Low_Res_Input_Images", "a_tubulin", name)
     
-    return io.imread(image_path)
+    return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 
 def get_low_res_pattern_image(name):
     '''
@@ -39,7 +40,7 @@ def get_low_res_pattern_image(name):
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     image_path = os.path.join(parent, "Low_Res_Input_Images", "Pattern", name)
     
-    return io.imread(image_path)
+    return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 
 
 class Low_Res_Image:
@@ -47,51 +48,8 @@ class Low_Res_Image:
     def __init__(self, image_file):
         self.image_file = image_file
         
-    def display_labeled_image(self):
-        fig, ax = plt.subplots(1, figsize = (15,15))
-        
-                
-        # adding labels
-        for i in range(len(self.objects)):
-            c = plt.Circle((self.objects[i][1], self.objects[i][0]), 30, color = 'red', linewidth = 1, fill = False)
-            ax.add_patch(c)
-        
-        
-        ax.imshow(self.image_file, cmap='gray', interpolation='nearest')
-        ax.set_aspect('equal')
-        plt.axis('off')
-        plt.show()    
-        
-    def segment_image(self):
-        
-        self.image_file = filters.gaussian(self.image_file, sigma = gaussian_std)
-        
-        
-        block_size = 15
-        val = filters.threshold_local(self.image_file, block_size, offset = -0.0001)
-                
-        #image_objects = np.clip(self.image_file, val, float('inf'))
-        
-        image_objects = self.image_file > val
-        
-        label_image = label(image_objects)
-        properties = regionprops(label_image)
-        
-        fig, ax = plt.subplots(1, figsize = (15,15))
-        ax.imshow(self.image_file > val, cmap='gray', interpolation='nearest')
-        ax.set_aspect('equal')
-        plt.axis('off')
-        plt.show()    
-    
-        
-        self.objects = []
         
 
-        for i in range(len(properties)):
-            coord = [properties[i].centroid[0], properties[i].centroid[1]]
-            self.objects.append(coord)
-            
-            
         
         
     def transform_coord(self, image_coord):        
