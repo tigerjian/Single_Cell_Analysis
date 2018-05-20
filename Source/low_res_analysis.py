@@ -36,7 +36,11 @@ def get_low_res_a_tubulin_image(name):
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     image_path = os.path.join(parent, "Low_Res_Input_Images", "a_tubulin", name)
     
-    return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+    image = io.imread(image_path)
+    image = (image/256).astype("uint8")
+    image = rescale_intensity(image)
+    
+    return image
 
 def get_low_res_pattern_image(name):
     '''
@@ -46,8 +50,14 @@ def get_low_res_pattern_image(name):
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     image_path = os.path.join(parent, "Low_Res_Input_Images", "Pattern", name)
     
-    image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+    image = io.imread(image_path)
     image = (image/256).astype("uint8")
+    
+    mean = np.mean(image)
+    std = np.std(image)
+    
+    image = np.clip(image, 0, ((mean + std) * 5).astype("uint8"))
+    image = rescale_intensity(image)
     
     return image
 
@@ -58,15 +68,32 @@ class Low_Res_Image:
     
     def detect_blobs(self):
         params = cv2.SimpleBlobDetector_Params()
+        
+        params.blobColor = 255;
+        
+        
+        params.filterByCircularity = False
+        params.filterByConvexity = False
+        params.filterByInertia = False
+
+        
+        params.filterByArea = True
+        params.minArea = 1000
+
+
+
+ 
+
+        
+        
         detector = cv2.SimpleBlobDetector_create(params)
         
-        keypoints = detector.detect(255 - self.image_file)
+        keypoints = detector.detect(self.image_file)
         
         
-        print(keypoints[0].pt)
-    
+        im_with_keypoints = cv2.drawKeypoints(self.image_file, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
         
-        display_image(self.image_file)
+        display_image(im_with_keypoints)
 
         
         
