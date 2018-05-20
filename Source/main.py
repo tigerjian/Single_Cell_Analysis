@@ -6,4 +6,9 @@ Desciption:
 
 
 
+    print("analyzing...")
+    
+    
 
+if __name__ == "__main__":
+    analyze_low_res()
