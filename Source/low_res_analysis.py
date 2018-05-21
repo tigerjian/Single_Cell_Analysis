@@ -15,7 +15,7 @@ pixel_size = 0.64570
 
 cell_coord = []
 
-DAPI_dist = 25
+DAPI_dist = 15
 a_tubulin_dist = 25
 
 total = 0
@@ -176,8 +176,9 @@ class Low_Res_Image:
         image_y = float(image_coord[int(self.image_id)][1])
                 
         for i in range(len(self.objects)):
-            x_val = self.objects[i][1]
-            y_val = self.objects[i][0]
+            x_val = self.objects[i][0]
+            y_val = self.objects[i][1]
+            
             x_coord = image_x + (image_size/2 - x_val) * pixel_size
             y_coord = image_y + (y_val - image_size/2) * pixel_size
             cell_coord.append([x_coord, y_coord, x_val, y_val, self.image_id])

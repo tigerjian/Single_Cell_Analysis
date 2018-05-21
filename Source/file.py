@@ -1,12 +1,13 @@
 import os
 
 DAPI_file = "DAPI_atubulin_pattern_1_R3D_PRJ_w435_t%.3d.tif"
-
-
+a_tubulin_file = "DAPI_atubulin_pattern_1_R3D_PRJ_w632_t%.3d.tif"
+pattern_file = "DAPI_atubulin_pattern_1_R3D_PRJ_w676_t%.3d.tif"
+low_res_log = "DAPI_atubulin_pattern_1_R3D.dv.log"
 
 def get_low_res_coord():
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    path = os.path.join(parent, "Low_Res_Input_Images", "DAPI_atubulin_pattern_1_R3D.dv.log")
+    path = os.path.join(parent, "Low_Res_Input_Images", low_res_log)
     
     file = open(path, "r")
     file_lines = file.readlines()

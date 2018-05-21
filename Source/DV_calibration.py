@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from math import sqrt
 import numpy as np
 from scipy.optimize import minimize
+import file
 
 
 x_min = [float("inf"), 0]
@@ -66,9 +67,10 @@ def generate_coord(cells):
     
     trans_mat = minimize(err, x0 = [1, 1, 1, 1, 1, 1], args = (pred_coord, act_coord)).x.reshape(2,3)
     trans_mat = np.append(trans_mat, [0,0,1])
+    
+    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    path = os.path.join(parent, "Point_Lists", "DV_calibrated_pts.pts")
         
-    path = os.path.join(os.getcwd(), 'DV_Point_List', 'calibrated_points.pts')   
-
     f = open(path, "w")
         
     for i in range(len(cells)):
@@ -76,9 +78,6 @@ def generate_coord(cells):
         write_point(path, i + 1, f, trans_v[0], trans_v[1])
     f.close()
    
-
-        
-
 def run_calibration(cells):
     global x_min, x_max, y_min, y_max, actual_x_min, actual_x_max, actual_y_min, actual_y_max
     
@@ -92,8 +91,9 @@ def run_calibration(cells):
         if (cells[i][1] > y_max[1]):
             y_max = cells[i]
               
-    path = os.path.join(os.getcwd(), 'DV Calibration', 'calibration_points.pts')   
-
+    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    path = os.path.join(parent, "Point_Lists", "calibration_pts_for_DV.pts")
+    
     f = open(path, "w")
     
     write_point(path, 1, f, x_min[0], x_min[1])
@@ -106,14 +106,15 @@ def run_calibration(cells):
                 
     print("Go to: x = %.2f, y = %.2f" % (x_min[0], x_min[1]))
           
-    camera = low_res.get_low_res_image_DAPI("DAPI_pH3_1_R3D_PRJ_w435_t%.3d.tif" % x_min[-1])
+    camera = low_res_analysis.get_low_res_DAPI_image(file.DAPI_file % x_min[-1])
             
-    fig, ax = plt.subplots(1, figsize = (10,10))
+    fig, ax = plt.subplots(1, figsize = (15,15))
     c = plt.Circle((x_min[2], x_min[3]), 10, color = 'red', linewidth = 1, fill = False)
     ax.add_patch(c)
 
     ax.imshow(camera, cmap='gray', interpolation='nearest')
     ax.set_aspect('equal')
+    plt.axis('off')
     plt.show()    
     
     x = input("Enter actual x coord: ")
@@ -123,14 +124,15 @@ def run_calibration(cells):
     
     print("Go to: x = %.2f, y = %.2f" % (x_max[0], x_max[1]))
           
-    camera = low_res.get_low_res_image_DAPI("DAPI_pH3_1_R3D_PRJ_w435_t%.3d.tif" % x_max[-1])
+    camera = low_res_analysis.get_low_res_DAPI_image(file.DAPI_file % x_max[-1])
             
-    fig, ax = plt.subplots(1, figsize = (10,10))
+    fig, ax = plt.subplots(1, figsize = (15,15))
     c = plt.Circle((x_max[2], x_max[3]), 10, color = 'red', linewidth = 1, fill = False)
     ax.add_patch(c)
 
     ax.imshow(camera, cmap='gray', interpolation='nearest')
     ax.set_aspect('equal')
+    plt.axis('off')
     plt.show()    
     
     x = input("Enter actual x coord: ")
@@ -140,14 +142,15 @@ def run_calibration(cells):
     
     print("Go to: x = %.2f, y = %.2f" % (y_min[0], y_min[1]))
           
-    camera = low_res.get_low_res_image_DAPI("DAPI_pH3_1_R3D_PRJ_w435_t%.3d.tif" % y_min[-1])
+    camera = low_res_analysis.get_low_res_DAPI_image(file.DAPI_file % y_min[-1])
             
-    fig, ax = plt.subplots(1, figsize = (10,10))
+    fig, ax = plt.subplots(1, figsize = (15,15))
     c = plt.Circle((y_min[2], y_min[3]), 10, color = 'red', linewidth = 1, fill = False)
     ax.add_patch(c)
 
     ax.imshow(camera, cmap='gray', interpolation='nearest')
     ax.set_aspect('equal')
+    plt.axis('off')
     plt.show()    
     
     x = input("Enter actual x coord: ")
@@ -157,14 +160,15 @@ def run_calibration(cells):
     
     print("Go to: x = %.2f, y = %.2f" % (y_max[0], y_max[1]))
           
-    camera = low_res.get_low_res_image_DAPI("DAPI_pH3_1_R3D_PRJ_w435_t%.3d.tif" % y_max[-1])
+    camera = low_res_analysis.get_low_res_DAPI_image(file.DAPI_file % y_max[-1])
             
-    fig, ax = plt.subplots(1, figsize = (10,10))
+    fig, ax = plt.subplots(1, figsize = (15,15))
     c = plt.Circle((y_max[2], y_max[3]), 10, color = 'red', linewidth = 1, fill = False)
     ax.add_patch(c)
 
     ax.imshow(camera, cmap='gray', interpolation='nearest')
     ax.set_aspect('equal')
+    plt.axis('off')
     plt.show()   
     
     x = input("Enter actual x coord: ")
