@@ -63,50 +63,64 @@ def get_low_res_pattern_image(name):
 
 class Low_Res_Image:
     
-    def __init__(self, image_file):
-        self.image_file = image_file        
-    
-    def detect_blobs(self):
+    def __init__(self, DAPI, a_tubulin, pattern):
+        self.DAPI = DAPI  
+        self.a_tubulin = a_tubulin  
+        self.pattern = pattern  
+        
+    def detect_DAPI(self):
         params = cv2.SimpleBlobDetector_Params()
-        
         params.blobColor = 255;
-        
-        
         params.filterByCircularity = False
         params.filterByConvexity = False
         params.filterByInertia = False
+        params.filterByArea = False
 
-        
-        params.filterByArea = True
-        params.minArea = 1000
+        params.minThreshold = 100
 
-
-
- 
-
-        
-        
         detector = cv2.SimpleBlobDetector_create(params)
         
-        keypoints = detector.detect(self.image_file)
+        keypoints = detector.detect(self.DAPI)
         
-        
-        im_with_keypoints = cv2.drawKeypoints(self.image_file, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
+        im_with_keypoints = cv2.drawKeypoints(self.DAPI, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
         
         display_image(im_with_keypoints)
+        
+    def detect_a_tubulin(self):
+        params = cv2.SimpleBlobDetector_Params()
+        params.blobColor = 255;
+        params.filterByCircularity = False
+        params.filterByConvexity = False
+        params.filterByInertia = False
+        params.filterByArea = True
+        params.minArea = 25
+        params.minThreshold = 50
 
+        detector = cv2.SimpleBlobDetector_create(params)
         
+        keypoints = detector.detect(self.a_tubulin)
         
+        im_with_keypoints = cv2.drawKeypoints(self.a_tubulin, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
         
+        display_image(im_with_keypoints)
+    
+    def detect_pattern(self):
+        params = cv2.SimpleBlobDetector_Params()
+        params.blobColor = 255;
+        params.filterByCircularity = False
+        params.filterByConvexity = False
+        params.filterByInertia = False
+        params.filterByArea = True
+        params.minArea = 1000
+        params.maxArea = 3000
 
-
-#        print(blobs)
-#        
-
+        detector = cv2.SimpleBlobDetector_create(params)
         
+        keypoints = detector.detect(self.pattern)
         
-
+        im_with_keypoints = cv2.drawKeypoints(self.pattern, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
         
+        display_image(im_with_keypoints)
         
     def transform_coord(self, image_coord):        
         image_x = float(image_coord[int(self.image_id)][0])
