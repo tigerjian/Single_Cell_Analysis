@@ -3,6 +3,7 @@ from low_res_analysis import get_low_res_DAPI_image, get_low_res_a_tubulin_image
 from image_display import display_image
 import file
 import DV_calibration
+import numpy as np
 
 
 def analyze_low_res():
@@ -14,7 +15,9 @@ def analyze_low_res():
     
     image_coord = file.get_low_res_coord()
         
-    for i in range(1,287): #287, 286 total
+    
+    for i in range(1, file.num_low_res + 1): 
+        
         print("Analyzing image %d" % i)
     
         DAPI_img = get_low_res_DAPI_image(file.DAPI_file % i)            

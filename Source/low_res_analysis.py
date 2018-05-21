@@ -117,6 +117,7 @@ class Low_Res_Image:
         params.filterByInertia = False
         params.filterByArea = True
         params.minArea = 25
+        params.maxArea = 250
         params.minThreshold = 50
 
         detector = cv2.SimpleBlobDetector_create(params)
