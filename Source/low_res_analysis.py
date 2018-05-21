@@ -7,10 +7,18 @@ import cv2
 from skimage.exposure import rescale_intensity
 import numpy as np
 from image_display import display_image
+from math import sqrt
 
 gaussian_std = 5
 image_size = 2048
 pixel_size = 0.64570
+
+cell_coord = []
+
+DAPI_dist = 25
+a_tubulin_dist = 25
+
+total = 0
 
 def get_low_res_DAPI_image(name):
     '''
@@ -61,30 +69,45 @@ def get_low_res_pattern_image(name):
     
     return image
 
+def euc_dist(x1, y1, x2, y2):
+    return sqrt((x1 - x2)**2 + (y1 - y2)**2)
+
 class Low_Res_Image:
     
-    def __init__(self, DAPI, a_tubulin, pattern):
+    def __init__(self, DAPI, a_tubulin, pattern, image_id):
+        self.image_id = image_id
+        
         self.DAPI = DAPI  
         self.a_tubulin = a_tubulin  
         self.pattern = pattern  
         
+        self.DAPI_pts = []
+        self.a_tubulin_pts = []
+        self.pattern_pts = []
+        
+        self.objects = []
+        
     def detect_DAPI(self):
         params = cv2.SimpleBlobDetector_Params()
+        
+        # detector parameters
         params.blobColor = 255;
         params.filterByCircularity = False
         params.filterByConvexity = False
         params.filterByInertia = False
         params.filterByArea = False
-
         params.minThreshold = 100
 
         detector = cv2.SimpleBlobDetector_create(params)
         
         keypoints = detector.detect(self.DAPI)
         
-        im_with_keypoints = cv2.drawKeypoints(self.DAPI, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
+        for i in range(len(keypoints)):
+            self.DAPI_pts.append(keypoints[i].pt)
         
-        display_image(im_with_keypoints)
+        # uncomment to view labeled image
+#        im_with_keypoints = cv2.drawKeypoints(self.DAPI, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
+#        display_image(im_with_keypoints)
         
     def detect_a_tubulin(self):
         params = cv2.SimpleBlobDetector_Params()
@@ -100,9 +123,12 @@ class Low_Res_Image:
         
         keypoints = detector.detect(self.a_tubulin)
         
-        im_with_keypoints = cv2.drawKeypoints(self.a_tubulin, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
+        for i in range(len(keypoints)):
+            self.a_tubulin_pts.append(keypoints[i].pt)
         
-        display_image(im_with_keypoints)
+        # uncomment to view labeled image
+#        im_with_keypoints = cv2.drawKeypoints(self.a_tubulin, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
+#        display_image(im_with_keypoints)
     
     def detect_pattern(self):
         params = cv2.SimpleBlobDetector_Params()
@@ -118,17 +144,40 @@ class Low_Res_Image:
         
         keypoints = detector.detect(self.pattern)
         
-        im_with_keypoints = cv2.drawKeypoints(self.pattern, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
+        for i in range(len(keypoints)):
+            self.pattern_pts.append(keypoints[i].pt)
         
-        display_image(im_with_keypoints)
+        # uncomment to view labeled image
+#        im_with_keypoints = cv2.drawKeypoints(self.pattern, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
+#        display_image(im_with_keypoints)
+        
+    def detect_objects(self):
+        global total
+        
+        for pat in self.pattern_pts:
+            near_DAPI = False
+            near_a_tubulin = False
+            
+            for DAPI in self.DAPI_pts:
+                d = euc_dist(DAPI[0], DAPI[1], pat[0], pat[1])
+                if d < DAPI_dist:
+                    near_DAPI = True
+                    
+            for a_tubulin in self.a_tubulin_pts:
+                d = euc_dist(a_tubulin[0], a_tubulin[1], pat[0], pat[1])
+                if d < a_tubulin_dist:
+                    near_a_tubulin = True
+            
+            if near_DAPI and near_a_tubulin:
+                self.objects.append(pat)
         
     def transform_coord(self, image_coord):        
         image_x = float(image_coord[int(self.image_id)][0])
         image_y = float(image_coord[int(self.image_id)][1])
                 
-        for i in range(self.objects.shape[0]):
-            x_val = self.objects[i,1]
-            y_val = self.objects[i,0]
+        for i in range(len(self.objects)):
+            x_val = self.objects[i][1]
+            y_val = self.objects[i][0]
             x_coord = image_x + (image_size/2 - x_val) * pixel_size
             y_coord = image_y + (y_val - image_size/2) * pixel_size
             cell_coord.append([x_coord, y_coord, x_val, y_val, self.image_id])

@@ -1,24 +1,33 @@
 import low_res_analysis
 from low_res_analysis import get_low_res_DAPI_image, get_low_res_a_tubulin_image, get_low_res_pattern_image
 from image_display import display_image
+import file
 
 
 def analyze_low_res():
     '''
-    Analyzes the low res images 
+    Analyzes the low res images and produces a point list for cells of interest
     
     '''
     
-    i = 120
     
-    DAPI_img = get_low_res_DAPI_image("DAPI_atubulin_pattern_1_R3D_PRJ_w435_t%.3d.tif" % i)            
-    a_tubulin_img = get_low_res_a_tubulin_image("DAPI_atubulin_pattern_1_R3D_PRJ_w632_t%.3d.tif" % i)            
-    pattern_img = get_low_res_pattern_image("DAPI_atubulin_pattern_1_R3D_PRJ_w676_t%.3d.tif" % i)            
-
-    image = low_res_analysis.Low_Res_Image(DAPI_img, a_tubulin_img, pattern_img)
-    image.detect_a_tubulin()
+    image_coord = file.get_low_res_coord()
+        
+    for i in range(1,10): #287, 286 total
+        print("Analyzing image %d" % i)
     
-    display_image(a_tubulin_img)
+        DAPI_img = get_low_res_DAPI_image(file.DAPI_file % i)            
+        a_tubulin_img = get_low_res_a_tubulin_image("DAPI_atubulin_pattern_1_R3D_PRJ_w632_t%.3d.tif" % i)            
+        pattern_img = get_low_res_pattern_image("DAPI_atubulin_pattern_1_R3D_PRJ_w676_t%.3d.tif" % i)            
+    
+        image = low_res_analysis.Low_Res_Image(DAPI_img, a_tubulin_img, pattern_img,i)
+        
+        image.detect_DAPI()
+        image.detect_a_tubulin()
+        image.detect_pattern()
+        image.detect_objects()
+        
+        image.transform_coord(image_coord)
     
     
 
