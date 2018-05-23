@@ -8,6 +8,10 @@ from skimage.exposure import rescale_intensity
 import numpy as np
 from image_display import display_image
 from math import sqrt
+from skimage.filters import threshold_otsu
+from skimage.measure import label, regionprops
+from skimage.morphology import closing, opening
+from skimage.segmentation import clear_border
 
 gaussian_std = 5
 image_size = 2048
@@ -128,8 +132,8 @@ class Low_Res_Image:
             self.a_tubulin_pts.append(keypoints[i].pt)
         
         # uncomment to view labeled image
-#        im_with_keypoints = cv2.drawKeypoints(self.a_tubulin, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
-#        display_image(im_with_keypoints)
+        im_with_keypoints = cv2.drawKeypoints(self.a_tubulin, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
+        display_image(im_with_keypoints)
     
     def detect_pattern(self):
         params = cv2.SimpleBlobDetector_Params()
@@ -184,3 +188,57 @@ class Low_Res_Image:
             y_coord = image_y + (y_val - image_size/2) * pixel_size
             cell_coord.append([x_coord, y_coord, x_val, y_val, self.image_id])
 
+    def g_method_DAPI(self):
+        thresh = threshold_otsu(self.DAPI)
+        DAPI_thresh = self.DAPI > thresh
+        DAPI_cleared = clear_border(DAPI_thresh)
+        
+        DAPI_labeled = label(DAPI_cleared)
+        
+        objects = []
+                
+        for region in regionprops(DAPI_labeled, self.DAPI):
+            intensity = region.mean_intensity
+            area = region.area
+            blob = region.intensity_image
+            std = np.nanstd(np.where(np.isclose(blob,0), np.nan, blob))
+            
+            g_value = (intensity) * (std)**3 / (area)
+            
+            if g_value > 1000:
+                x = region.centroid[0]
+                y = region.centroid[1]
+                
+                objects.append([x, y])
+            
+
+            
+        fig, ax = plt.subplots(1, figsize = (15,15))
+        
+                
+        # adding labels
+        for i in range(len(objects)):
+            c = plt.Circle((objects[i][1], objects[i][0]), 30, color = 'red', linewidth = 1, fill = False)
+            ax.add_patch(c)
+        
+        
+        ax.imshow(self.DAPI, cmap='gray', interpolation='nearest')
+        ax.set_aspect('equal')
+        plt.axis('off')
+        plt.show()    
+
+   
+        
+                
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
