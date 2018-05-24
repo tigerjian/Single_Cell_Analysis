@@ -1,4 +1,3 @@
-# Ay.
 import low_res_analysis
 from low_res_analysis import get_low_res_DAPI_image, get_low_res_a_tubulin_image, get_low_res_pattern_image
 from image_display import display_image
