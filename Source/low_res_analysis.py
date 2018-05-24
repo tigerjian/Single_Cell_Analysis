@@ -19,7 +19,7 @@ pixel_size = 0.64570
 
 cell_coord = []
 
-DAPI_dist = 15
+DAPI_dist = 10
 a_tubulin_dist = 25
 
 total = 0
@@ -88,6 +88,7 @@ class Low_Res_Image:
         self.DAPI_pts = []
         self.a_tubulin_pts = []
         self.pattern_pts = []
+        self.g_DAPI_pts = []
         
         self.objects = []
         
@@ -161,19 +162,20 @@ class Low_Res_Image:
         
         for pat in self.pattern_pts:
             near_DAPI = False
-            near_a_tubulin = False
+#            near_a_tubulin = False
             
-            for DAPI in self.DAPI_pts:
+            for DAPI in self.g_DAPI_pts:
                 d = euc_dist(DAPI[0], DAPI[1], pat[0], pat[1])
                 if d < DAPI_dist:
                     near_DAPI = True
                     
-            for a_tubulin in self.a_tubulin_pts:
-                d = euc_dist(a_tubulin[0], a_tubulin[1], pat[0], pat[1])
-                if d < a_tubulin_dist:
-                    near_a_tubulin = True
+#            for a_tubulin in self.a_tubulin_pts:
+#                d = euc_dist(a_tubulin[0], a_tubulin[1], pat[0], pat[1])
+#                if d < a_tubulin_dist:
+#                    near_a_tubulin = True
             
-            if near_DAPI and near_a_tubulin:
+#            if near_DAPI and near_a_tubulin:
+            if near_DAPI:
                 self.objects.append(pat)
         
     def transform_coord(self, image_coord):        
@@ -187,6 +189,20 @@ class Low_Res_Image:
             x_coord = image_x + (image_size/2 - x_val) * pixel_size
             y_coord = image_y + (y_val - image_size/2) * pixel_size
             cell_coord.append([x_coord, y_coord, x_val, y_val, self.image_id])
+            
+            
+#        fig, ax = plt.subplots(1, figsize = (15,15))
+#        # adding labels
+#        for i in range(len(self.objects)):
+#            c = plt.Circle((self.objects[i][0], self.objects[i][1]), 30, color = 'red', linewidth = 1, fill = False)
+#            ax.add_patch(c)
+#        
+#        
+#        ax.imshow(self.DAPI, cmap='gray', interpolation='nearest')
+#        ax.set_aspect('equal')
+#        plt.axis('off')
+#        plt.show()    
+
 
     def g_method_DAPI(self):
         thresh = threshold_otsu(self.DAPI)
@@ -195,7 +211,6 @@ class Low_Res_Image:
         
         DAPI_labeled = label(DAPI_cleared)
         
-        objects = []
                 
         for region in regionprops(DAPI_labeled, self.DAPI):
             intensity = region.mean_intensity
@@ -209,7 +224,7 @@ class Low_Res_Image:
                 x = region.centroid[0]
                 y = region.centroid[1]
                 
-                objects.append([x, y])
+                self.g_DAPI_pts.append([y, x])
             
 
             
@@ -217,8 +232,8 @@ class Low_Res_Image:
         
                 
         # adding labels
-        for i in range(len(objects)):
-            c = plt.Circle((objects[i][1], objects[i][0]), 30, color = 'red', linewidth = 1, fill = False)
+        for i in range(len(self.g_DAPI_pts)):
+            c = plt.Circle((self.g_DAPI_pts[i][0], self.g_DAPI_pts[i][1]), 30, color = 'red', linewidth = 1, fill = False)
             ax.add_patch(c)
         
         
