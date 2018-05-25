@@ -16,31 +16,29 @@ def analyze_low_res():
     image_coord = file.get_low_res_coord()
         
     
-    #for i in range(1, file.num_low_res + 1):     
+    #for i in range(1, file.num_low_res + 1):   
+    
+    for i in np.arange(1,110,10):
 
-    for i in range(101,102):    
         print("Analyzing image %d" % i)
     
         DAPI_img = get_low_res_DAPI_image(file.DAPI_file % i)            
-        a_tubulin_img = get_low_res_a_tubulin_image(file.a_tubulin_file % i)            
         pattern_img = get_low_res_pattern_image(file.pattern_file % i)            
     
-        image = low_res_analysis.Low_Res_Image(DAPI_img, a_tubulin_img, pattern_img,i)
-        
+        image = low_res_analysis.Low_Res_Image(DAPI_img, pattern_img,i) 
         
         image.g_method_DAPI()
-        
-#        image.detect_DAPI()
-#        image.detect_a_tubulin()
         image.detect_pattern()
         image.detect_objects()
         
         image.transform_coord(image_coord)
+        
+    low_res_analysis.save_points()
 #        
     print("%d points of interest found" % len(low_res_analysis.cell_coord))
         
-    DV_calibration.run_calibration(low_res_analysis.cell_coord)      
-    DV_calibration.generate_coord(low_res_analysis.cell_coord)
+#    DV_calibration.run_calibration(low_res_analysis.cell_coord)      
+#    DV_calibration.generate_coord(low_res_analysis.cell_coord)
     
     
 

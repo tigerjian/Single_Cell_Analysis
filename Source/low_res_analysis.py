@@ -8,14 +8,15 @@ from skimage.exposure import rescale_intensity
 import numpy as np
 from image_display import display_image
 from math import sqrt
-from skimage.filters import threshold_otsu
+from skimage.filters import threshold_otsu, gaussian
 from skimage.measure import label, regionprops
 from skimage.morphology import closing, opening
 from skimage.segmentation import clear_border
+import DV_calibration
 
 gaussian_std = 5
 image_size = 2048
-pixel_size = 0.64570
+pixel_size = 0.32557
 
 cell_coord = []
 
@@ -23,6 +24,16 @@ DAPI_dist = 10
 a_tubulin_dist = 25
 
 total = 0
+
+def save_points():
+    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    path = os.path.join(parent, "Point_Lists", "DV_calibrated_pts.pts")
+        
+    f = open(path, "w")
+        
+    for i in range(len(cell_coord)):
+        DV_calibration.write_point(path, i + 1, f, cell_coord[i][0], cell_coord[i][1])
+    f.close()
 
 def get_low_res_DAPI_image(name):
     '''
@@ -32,11 +43,11 @@ def get_low_res_DAPI_image(name):
     
     '''
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    image_path = os.path.join(parent, "Low_Res_Input_Images", "DAPI", name)
+    image_path = os.path.join(parent, "Low_Res_Input_Images_20x", "DAPI", name)
     
     image = io.imread(image_path)
-    image = (image/256).astype("uint8")
-    image = rescale_intensity(image)
+    image = (image/40).astype("uint8")
+    #image = rescale_intensity(image)
     
     return image
 
@@ -46,7 +57,7 @@ def get_low_res_a_tubulin_image(name):
     
     '''
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    image_path = os.path.join(parent, "Low_Res_Input_Images", "a_tubulin", name)
+    image_path = os.path.join(parent, "Low_Res_Input_Images_20x", "a_tubulin", name)
     
     image = io.imread(image_path)
     image = (image/256).astype("uint8")
@@ -60,7 +71,7 @@ def get_low_res_pattern_image(name):
     
     '''
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    image_path = os.path.join(parent, "Low_Res_Input_Images", "Pattern", name)
+    image_path = os.path.join(parent, "Low_Res_Input_Images_20x", "Pattern", name)
     
     image = io.imread(image_path)
     image = (image/256).astype("uint8")
@@ -78,11 +89,10 @@ def euc_dist(x1, y1, x2, y2):
 
 class Low_Res_Image:
     
-    def __init__(self, DAPI, a_tubulin, pattern, image_id):
+    def __init__(self, DAPI, pattern, image_id):
         self.image_id = image_id
         
         self.DAPI = DAPI  
-        self.a_tubulin = a_tubulin  
         self.pattern = pattern  
         
         self.DAPI_pts = []
@@ -143,8 +153,8 @@ class Low_Res_Image:
         params.filterByConvexity = False
         params.filterByInertia = False
         params.filterByArea = True
-        params.minArea = 1000
-        params.maxArea = 3000
+        params.minArea = 2000
+        params.maxArea = 5000
 
         detector = cv2.SimpleBlobDetector_create(params)
         
@@ -219,8 +229,8 @@ class Low_Res_Image:
             std = np.nanstd(np.where(np.isclose(blob,0), np.nan, blob))
             
             g_value = (intensity) * (std)**3 / (area)
-            
-            if g_value > 1000:
+                        
+            if g_value > 150:
                 x = region.centroid[0]
                 y = region.centroid[1]
                 
@@ -228,19 +238,23 @@ class Low_Res_Image:
             
 
             
-        fig, ax = plt.subplots(1, figsize = (15,15))
-        
+#        fig, ax = plt.subplots(1, figsize = (15,15))
+#        
+#                
+#        # adding labels
+#        for i in range(len(self.g_DAPI_pts)):
+#            c = plt.Circle((self.g_DAPI_pts[i][0], self.g_DAPI_pts[i][1]), 30, color = 'red', linewidth = 1, fill = False)
+#            ax.add_patch(c)
+#        
+#        
+#        ax.imshow(self.DAPI, cmap='gray', interpolation='nearest')
+#        ax.set_aspect('equal')
+#        plt.axis('off')
+#        plt.show()   
                 
-        # adding labels
-        for i in range(len(self.g_DAPI_pts)):
-            c = plt.Circle((self.g_DAPI_pts[i][0], self.g_DAPI_pts[i][1]), 30, color = 'red', linewidth = 1, fill = False)
-            ax.add_patch(c)
+                
+
         
-        
-        ax.imshow(self.DAPI, cmap='gray', interpolation='nearest')
-        ax.set_aspect('equal')
-        plt.axis('off')
-        plt.show()    
 
    
         
