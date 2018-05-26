@@ -13,12 +13,9 @@ def analyze_low_res():
     '''
     
     
-    image_coord = file.get_low_res_coord()
-        
+    image_coord = file.get_low_res_coord()        
     
-    #for i in range(1, file.num_low_res + 1):   
-    
-    for i in np.arange(1,110,10):
+    for i in range(1, file.num_low_res + 1):   
 
         print("Analyzing image %d" % i)
     

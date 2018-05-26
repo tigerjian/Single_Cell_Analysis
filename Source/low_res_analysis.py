@@ -20,7 +20,7 @@ pixel_size = 0.32557
 
 cell_coord = []
 
-DAPI_dist = 10
+DAPI_dist = 50
 a_tubulin_dist = 25
 
 total = 0
@@ -45,8 +45,9 @@ def get_low_res_DAPI_image(name):
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     image_path = os.path.join(parent, "Low_Res_Input_Images_20x", "DAPI", name)
     
-    image = io.imread(image_path)
-    image = (image/40).astype("uint8")
+    image = io.imread(image_path)    
+    
+    image = (image/20).astype("uint8")
     #image = rescale_intensity(image)
     
     return image
@@ -143,8 +144,8 @@ class Low_Res_Image:
             self.a_tubulin_pts.append(keypoints[i].pt)
         
         # uncomment to view labeled image
-        im_with_keypoints = cv2.drawKeypoints(self.a_tubulin, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
-        display_image(im_with_keypoints)
+#        im_with_keypoints = cv2.drawKeypoints(self.a_tubulin, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)    
+#        display_image(im_with_keypoints)
     
     def detect_pattern(self):
         params = cv2.SimpleBlobDetector_Params()
@@ -153,8 +154,8 @@ class Low_Res_Image:
         params.filterByConvexity = False
         params.filterByInertia = False
         params.filterByArea = True
-        params.minArea = 2000
-        params.maxArea = 5000
+        params.minArea = 5000
+        params.maxArea = 30000
 
         detector = cv2.SimpleBlobDetector_create(params)
         
@@ -170,11 +171,11 @@ class Low_Res_Image:
     def detect_objects(self):
         global total
         
-        for pat in self.pattern_pts:
+        for pat in self.g_DAPI_pts:
             near_DAPI = False
 #            near_a_tubulin = False
             
-            for DAPI in self.g_DAPI_pts:
+            for DAPI in self.pattern_pts:
                 d = euc_dist(DAPI[0], DAPI[1], pat[0], pat[1])
                 if d < DAPI_dist:
                     near_DAPI = True
@@ -230,15 +231,14 @@ class Low_Res_Image:
             
             g_value = (intensity) * (std)**3 / (area)
                         
-            if g_value > 150:
+            if g_value > 250 and area > 100:
                 x = region.centroid[0]
                 y = region.centroid[1]
                 
                 self.g_DAPI_pts.append([y, x])
+                
             
-
-            
-#        fig, ax = plt.subplots(1, figsize = (15,15))
+#        fig, ax = plt.subplots(1, figsize = (30,30))
 #        
 #                
 #        # adding labels
