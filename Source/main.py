@@ -6,6 +6,7 @@ import DV_calibration
 import numpy as np
 import high_res_analysis
 from skimage.filters import threshold_otsu, gaussian
+import linear_LCM_calibration
 
 
 
@@ -16,7 +17,8 @@ def analyze_low_res():
     '''
     image_coord = file.get_low_res_coord()        
     
-    for i in range(1, file.num_low_res + 1):   
+#    for i in range(1, file.num_low_res + 1):   
+    for i in range(100,110):
         print("Analyzing image %d" % i)
     
         DAPI_img = get_low_res_DAPI_image(file.DAPI_file % i)            
@@ -29,6 +31,8 @@ def analyze_low_res():
         image.detect_objects()
         
         image.transform_coord(image_coord)
+    
+    low_res_analysis.save_points()
                 
     print("%d points of interest found" % len(low_res_analysis.cell_coord))
         
@@ -41,9 +45,11 @@ def analyze_high_res():
         atubulin = high_res_analysis.get_high_res_image(file.hr_atubulin % i)
         pattern = high_res_analysis.get_high_res_image(file.hr_pattern % i)
         
-        
+def convert_to_LCM():
+    linear_LCM_calibration.get_points()
+    
 
 
 
 if __name__ == "__main__":
-    analyze_high_res()
+    analyze_low_res()

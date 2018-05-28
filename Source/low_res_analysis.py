@@ -26,12 +26,16 @@ total = 0
 
 def save_points():
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    path = os.path.join(parent, "Point_Lists", "DV_calibrated_pts.pts")
+    path = os.path.join(parent, "Point_Lists", "pre_LCM")
         
     f = open(path, "w")
         
     for i in range(len(cell_coord)):
-        DV_calibration.write_point(path, i + 1, f, cell_coord[i][0], cell_coord[i][1])
+        f.write(str(cell_coord[i][0]) + " ")
+        f.write(str(cell_coord[i][1]) + " ")
+        f.write(str(cell_coord[i][2]) + " ")
+        f.write(str(cell_coord[i][3]) + " ")
+        f.write(str(cell_coord[i][4]) + "\n")
     f.close()
 
 def get_low_res_DAPI_image(name):
