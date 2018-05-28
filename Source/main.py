@@ -17,8 +17,7 @@ def analyze_low_res():
     '''
     image_coord = file.get_low_res_coord()        
     
-#    for i in range(1, file.num_low_res + 1):   
-    for i in range(100,110):
+    for i in range(1, file.num_low_res + 1):   
         print("Analyzing image %d" % i)
     
         DAPI_img = get_low_res_DAPI_image(file.DAPI_file % i)            
