@@ -15,7 +15,16 @@ def get_high_res_image(name):
     return image
 
 
-def High_Res_Image
+class High_Res_Image:
+    
+    def __init__(self, DAPI, atubulin, pattern, image_id):
+        self.image_id = image_id
+        self.DAPI = DAPI
+        self.atubulin = atubulin
+        self.pattern = pattern
+        
+    
+    
     
     
     

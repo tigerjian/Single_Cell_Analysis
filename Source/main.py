@@ -41,6 +41,7 @@ def analyze_high_res():
         atubulin = high_res_analysis.get_high_res_image(file.hr_atubulin % i)
         pattern = high_res_analysis.get_high_res_image(file.hr_pattern % i)
         
+        
 
 
 
