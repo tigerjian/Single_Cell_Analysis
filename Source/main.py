@@ -4,6 +4,9 @@ from image_display import display_image
 import file
 import DV_calibration
 import numpy as np
+import high_res_analysis
+from skimage.filters import threshold_otsu, gaussian
+
 
 
 def analyze_low_res():
@@ -11,8 +14,6 @@ def analyze_low_res():
     Analyzes the low res images and produces a point list for cells of interest
     
     '''
-    
-    
     image_coord = file.get_low_res_coord()        
     
     for i in range(1, file.num_low_res + 1):   
@@ -34,7 +35,14 @@ def analyze_low_res():
     DV_calibration.run_calibration(low_res_analysis.cell_coord)      
     DV_calibration.generate_coord(low_res_analysis.cell_coord)
     
-    
+def analyze_high_res():
+    for i in range(1,100):
+        DAPI = high_res_analysis.get_high_res_image(file.hr_DAPI % i)
+        atubulin = high_res_analysis.get_high_res_image(file.hr_atubulin % i)
+        pattern = high_res_analysis.get_high_res_image(file.hr_pattern % i)
+        
+
+
 
 if __name__ == "__main__":
-    analyze_low_res()
+    analyze_high_res()
