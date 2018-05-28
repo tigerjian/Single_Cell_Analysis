@@ -20,8 +20,7 @@ pixel_size = 0.32557
 
 cell_coord = []
 
-DAPI_dist = 50
-a_tubulin_dist = 25
+DAPI_dist = 30
 
 total = 0
 
@@ -45,24 +44,9 @@ def get_low_res_DAPI_image(name):
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     image_path = os.path.join(parent, "Low_Res_Input_Images_20x", "DAPI", name)
     
-    image = io.imread(image_path)    
-    
+    image = io.imread(image_path)        
     image = (image/20).astype("uint8")
     #image = rescale_intensity(image)
-    
-    return image
-
-def get_low_res_a_tubulin_image(name):
-    '''
-    Returns the a_tubulin image in the Low_Res_Input_Images folder as a 2d array
-    
-    '''
-    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    image_path = os.path.join(parent, "Low_Res_Input_Images_20x", "a_tubulin", name)
-    
-    image = io.imread(image_path)
-    image = (image/256).astype("uint8")
-    image = rescale_intensity(image)
     
     return image
 
@@ -80,7 +64,7 @@ def get_low_res_pattern_image(name):
     mean = np.mean(image)
     std = np.std(image)
     
-    image = np.clip(image, 0, ((mean + std) * 5).astype("uint8"))
+    image = np.clip(image, 0, ((mean + std) * 3).astype("uint8"))
     image = rescale_intensity(image)
     
     return image
@@ -154,7 +138,7 @@ class Low_Res_Image:
         params.filterByConvexity = False
         params.filterByInertia = False
         params.filterByArea = True
-        params.minArea = 5000
+        params.minArea = 2500
         params.maxArea = 30000
 
         detector = cv2.SimpleBlobDetector_create(params)
@@ -230,8 +214,8 @@ class Low_Res_Image:
             std = np.nanstd(np.where(np.isclose(blob,0), np.nan, blob))
             
             g_value = (intensity) * (std)**3 / (area)
-                        
-            if g_value > 250 and area > 100:
+                                                
+            if g_value > 500 and area > 100 and area < 3000:
                 x = region.centroid[0]
                 y = region.centroid[1]
                 
@@ -239,8 +223,8 @@ class Low_Res_Image:
                 
             
 #        fig, ax = plt.subplots(1, figsize = (30,30))
-#        
-#                
+        
+                
 #        # adding labels
 #        for i in range(len(self.g_DAPI_pts)):
 #            c = plt.Circle((self.g_DAPI_pts[i][0], self.g_DAPI_pts[i][1]), 30, color = 'red', linewidth = 1, fill = False)

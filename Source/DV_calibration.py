@@ -102,7 +102,7 @@ def run_calibration(cells):
     write_point(path, 4, f, y_max[0], y_max[1])
     
     f.close()
-
+    
                 
     print("Go to: x = %.2f, y = %.2f" % (x_min[0], x_min[1]))
           
