@@ -107,7 +107,7 @@ def run_calibration(cells):
     print("Go to: x = %.2f, y = %.2f" % (x_min[0], x_min[1]))
           
     camera = low_res_analysis.get_low_res_DAPI_image(file.DAPI_file % x_min[-1])
-            
+                
     fig, ax = plt.subplots(1, figsize = (15,15))
     c = plt.Circle((x_min[2], x_min[3]), 10, color = 'red', linewidth = 1, fill = False)
     ax.add_patch(c)

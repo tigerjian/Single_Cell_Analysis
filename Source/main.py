@@ -39,16 +39,18 @@ def analyze_low_res():
     DV_calibration.generate_coord(low_res_analysis.cell_coord)
     
 def analyze_high_res():
-    for i in range(1,100):
+    for i in range(600,700):
+        print("Image %d" % i)
         DAPI = high_res_analysis.get_high_res_image(file.hr_DAPI % i)
         atubulin = high_res_analysis.get_high_res_image(file.hr_atubulin % i)
         pattern = high_res_analysis.get_high_res_image(file.hr_pattern % i)
         
-def convert_to_LCM():
+        display_image(atubulin)
+        
+def LCM_calibration():
     linear_LCM_calibration.get_points()
-    
-
-
+    linear_LCM_calibration.run_calibration_LCM(linear_LCM_calibration.pre_LCM_pts)
+    linear_LCM_calibration.generate_coord_LCM(linear_LCM_calibration.pre_LCM_pts)
 
 if __name__ == "__main__":
-    analyze_low_res()
+    LCM_calibration()
