@@ -29,9 +29,9 @@ valid = []
 
 def write_point(point_id, f, x, y):
     x_tl = x - 50
-    y_tl = x - 50
+    y_tl = y - 50
     x_br = x + 50
-    y_br = x + 50
+    y_br = y + 50
     
     f.write("\nRectangle	green	2	%d	1,1\n" % point_id)
     f.write(".	%.1f,%.1f\t%.1f,%.1f" %(x_tl, y_tl, x_br, y_br))
@@ -40,7 +40,7 @@ def write_point(point_id, f, x, y):
 def get_points():
     
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    path = os.path.join(parent, "Manual", "WT.txt")
+    path = os.path.join(parent, "Manual", "abnormal.txt")
     
     f = open(path, "r")
     file_lines = f.readlines()
@@ -101,7 +101,7 @@ def generate_coord_LCM(cells):
     trans_mat = np.append(trans_mat, [0,0,1])
             
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    path = os.path.join(parent, 'Point_Lists', 'calibrated_points_for_LCM.pts')   
+    path = os.path.join(parent, 'Point_Lists', 'calibrated_points_for_LCM.txt')   
     
 
     f = open(path, "w")
