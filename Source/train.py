@@ -24,10 +24,10 @@ img_size = 300
 num_channels = 2
 
 num_conv_layers = 3 # Set to desired number of convolutional layers.
-filter_size_per_layer = [3, 3, 3] # The size of the filter used for each layer.
+filter_size_per_layer = [3, 3, 3] # The size of the filter used for each conv layer.
 num_filters_per_layer = [32, 32, 64] # The number of filters for each convolutional layer.
 fc_layer_size = 128 # The number of neurons in the fully connected layer.
-dropout_rate = 0.2 # Fraction of neurons inactivated in the fully connected layerin any given iteration.
+dropout_rate = 0.2 # Fraction of neurons inactivated in the fully connected layer in any given iteration.
 
 
 # We shall load all the training and validation images and labels into memory using openCV and use that during training
