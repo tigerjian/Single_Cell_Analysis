@@ -12,7 +12,7 @@ x_max = [float("inf") * -1, 0]
 y_min = [0, float("inf")]
 y_max = [0, float("inf") * -1]
 
-actual_coordinates = [] # This list will eventually hold all of the user-guided corrected calibration point coordinates.
+act_coords = [] # This list will eventually hold all of the user-corrected calibration point coordinates.
 
 def write_point(point_id, f, x, y):
     x_tl = x - 50
@@ -34,7 +34,7 @@ def err(params, pred_coord, act_coord):
     pred_y_coord =c6*pred_coord[0]**2 + c7*pred_coord[0] + c8*pred_coord[1]**2 + c9*pred_coord[1] + c10
     calc_coord = list(zip(pred_x_coord, pred_y_coord)) # combine the predicted/calculated x and y values into a single list.
 
-    pred_pts_error = [] # This will eventually hold the euc distance between the act_coord and the pred_coord
+    pred_pts_error = [] # This will eventually hold the euc distance between each of the act_coord and the calc_coord
     for i in range(len(calc_coord)):
         pred_pts_error.append(euc_distance(act_coord[i], calc_coord[i]))
 
@@ -48,14 +48,12 @@ def generate_coord(cells):
     # =============================================================================
     print("Generating Calibrated Coordinates...")
     ## Think I need to add in global variables here. Note that Tiger doesn't include any global variables in the DV version of generate_coords, and it still works.
-    global actual_coordinates
+    global act_coords
     
     pred_coord = []
-    for i in range(len(actual_coordinates)):
-        pred_coord.append(actual_coordinates[i][0:2]) # Grab just the x and y coordinate from actual_coordinates
-    
-    act_coord = [actual_pt_1, actual_pt_2, actual_pt_3, actual_pt_4, actual_pt_5, actual_pt_6, actual_pt_7, actual_pt_8, actual_pt_9]
-    
+    for i in range(len(act_coords)):
+        pred_coord.append(act_coords[i][0:2]) # Grab just the x and y coordinate from act_coords
+        
     best_parameters = minimize(err, x0 = [1 for i in range(9)], args = (pred_coord, act_coord)).x.reshape(2,5) # Not sure if it's a good idea to initialize with all 1s. Can we make a better guess?
     
     # Apply the optimized polynomial parameters to each element in cells, and write the points to the calibrated pts file.    
@@ -102,9 +100,9 @@ def run_calibration(cells):
     # 
     # Output:
     #     actual coordinates based on user input while re-centering on the LCM. 
-    #     This is returned as a list called actual_coordinates. 
+    #     This is returned as a list called act_coords. 
     # =============================================================================
-    global x_min, x_max, y_min, y_max, actual_coordinates
+    global x_min, x_max, y_min, y_max, act_coords
     
     # Find the cells needed to create a grid encompassing all of the cells on the slide.
     for i in range(len(cells)):
@@ -162,7 +160,7 @@ def run_calibration(cells):
     f.close()
     
     # The below provides user input from the LCM to calibrate the coordinates for each of the tested points.
-    actual_coordinates = []
+    act_coords = []
     for i in range(len(calibration_points)):
         print("Go to: x = %.2f, y = %.2f" % (calibration_points[i][0], calibration_points[i][1])) # Go to the first calibration point, which is the upper-leftmost cell.          
 
@@ -172,7 +170,7 @@ def run_calibration(cells):
         x = input("Enter actual x coord: ")
         y = input("Enter actual y coord: ")
         
-        actual_coordinates.append([float(x),float(y)])
+        act_coords.append([float(x),float(y)])
 
 
 
