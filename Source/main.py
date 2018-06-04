@@ -7,8 +7,9 @@ import numpy as np
 import high_res_analysis
 from skimage.filters import threshold_otsu, gaussian
 import linear_LCM_calibration
-
-
+import non_linear_LCM_calibration
+import non_linear_LCM_calibration_V2
+import leastsq_LCM_calibration
 
 def analyze_low_res():
     '''
@@ -48,9 +49,9 @@ def analyze_high_res():
         display_image(atubulin)
         
 def LCM_calibration():
-    linear_LCM_calibration.get_points()
-    linear_LCM_calibration.run_calibration_LCM(linear_LCM_calibration.pre_LCM_pts)
-    linear_LCM_calibration.generate_coord_LCM(linear_LCM_calibration.pre_LCM_pts)
+    leastsq_LCM_calibration.get_points()
+    leastsq_LCM_calibration.run_calibration_LCM(leastsq_LCM_calibration.pre_LCM_pts)
+    leastsq_LCM_calibration.generate_coord_LCM()
 
 if __name__ == "__main__":
     LCM_calibration()

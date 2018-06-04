@@ -7,7 +7,6 @@ from scipy.optimize import minimize
 import file
 import itertools
 
-
 x_min = [float("inf"), 0]
 x_max = [float("inf") * -1, 0]
 y_min = [0, float("inf")]
@@ -15,31 +14,14 @@ y_max = [0, float("inf") * -1]
 
 actual_coordinates = [] # This list will eventually hold all of the user-guided corrected calibration point coordinates.
 
-def write_point(path, point_id, f, x, y):
-    p_str = ""
-    p_str += " " * (4 - len(str(point_id)))
-    p_str += "%d:" % point_id
+def write_point(point_id, f, x, y):
+    x_tl = x - 50
+    y_tl = y - 50
+    x_br = x + 50
+    y_br = y + 50
     
-    if (x >= 0):
-        p_str += " " * (10 - len("%.2f" % x))
-        p_str += "+"
-        p_str += "%.2f" % x
-    else:
-        p_str += " " * (11 - len("%.2f" % x))
-        p_str += "%.2f" % x
-        
-    if (y >= 0):
-        p_str += " " * (10 - len("%.2f" % y))
-        p_str += "+"
-        p_str += "%.2f" % y
-    else:
-        p_str += " " * (11 - len("%.2f" % y))
-        p_str += "%.2f" % y
-        
-    p_str += " " * 3
-    p_str += "+0.00"
-        
-    f.write(p_str + "\n")
+    f.write("\nRectangle	green	2	%d	1,1\n" % point_id)
+    f.write(".	%.1f,%.1f\t%.1f,%.1f" %(x_tl, y_tl, x_br, y_br))
     
 def euc_distance(v1, v2):
     return sqrt((v1[0] - v2[0])**2 + (v1[1] - v2[1])**2)
@@ -167,7 +149,6 @@ def run_calibration(cells):
         calibration_points.append(min_dist_cell_coords[i][0:2]) # Add the cell coordinates for each calibration point to a list.
         nearest = 0
     
-     
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     path = os.path.join(parent, "Point_Lists", "calibration_pts_for_LCM.pts")
     
@@ -183,7 +164,7 @@ def run_calibration(cells):
     # The below provides user input from the LCM to calibrate the coordinates for each of the tested points.
     actual_coordinates = []
     for i in range(len(calibration_points)):
-        print("Go to: x = %.2f, y = %.2f" % (calibration_points[i][0], calibration_points[i][1]) # Go to the first calibration point, which is the upper-leftmost cell.          
+        print("Go to: x = %.2f, y = %.2f" % (calibration_points[i][0], calibration_points[i][1])) # Go to the first calibration point, which is the upper-leftmost cell.          
 
         camera = low_res_analysis.get_low_res_DAPI_image(file.DAPI_file % calibration_points[i][-1])
         display_plot_image(camera, calibration_points[i])

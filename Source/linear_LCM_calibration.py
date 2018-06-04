@@ -93,11 +93,16 @@ def err(params, pred_coord, act_coord):
     return np.mean([x_min_error, x_max_error, y_min_error, y_max_error])
 
 def generate_coord_LCM(cells):
+    global x_min, x_max, y_min, y_max, actual_x_min, actual_x_max, actual_y_min, actual_y_max
+
     print("Generating Calibrated Coordinates...")
     pred_coord = [x_min[0:2] + [1], x_max[0:2] + [1], y_min[0:2] + [1], y_max[0:2] + [1]]
     act_coord = [actual_x_min, actual_x_max, actual_y_min, actual_y_max]
     
     trans_mat = minimize(err, x0 = [1, 1, 1, 1, 1, 1], args = (pred_coord, act_coord)).x.reshape(2,3)
+    
+    print(trans_mat)
+        
     trans_mat = np.append(trans_mat, [0,0,1])
             
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
@@ -118,9 +123,6 @@ def generate_coord_LCM(cells):
         trans_v = np.dot(trans_mat.reshape(3,3), cells[i][0:2] + [1])
         write_point(i + 1, f, trans_v[0], trans_v[1])
     f.close()
-   
-
-        
 
 def run_calibration_LCM(cells):
     global x_min, x_max, y_min, y_max, actual_x_min, actual_x_max, actual_y_min, actual_y_max
