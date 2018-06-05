@@ -10,6 +10,7 @@ import linear_LCM_calibration
 import non_linear_LCM_calibration
 import non_linear_LCM_calibration_V2
 import leastsq_LCM_calibration
+import high_res_preprocessing
 
 def analyze_low_res():
     '''
@@ -54,4 +55,3 @@ def LCM_calibration():
     leastsq_LCM_calibration.generate_coord_LCM()
 
 if __name__ == "__main__":
-    LCM_calibration()
