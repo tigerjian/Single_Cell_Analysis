@@ -16,6 +16,7 @@ import os
 import tSNE
 import DBSCAN
 
+
 def analyze_low_res():
     '''
     Analyzes the low res images and produces a point list for cells of interest
@@ -69,16 +70,18 @@ def generate_descriptors():
         parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
         image_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % i)
         if (os.path.isfile(image_path)):
-            #print("Generating SIFT descriptors for image %d" % i)
+            print("Generating SIFT descriptors for image %d" % i)
             DAPI_image = SIFT.get_high_res_image("DAPI_%d.tif" % i)
             atubulin_image = SIFT.get_high_res_image("atubulin_%d.tif" % i)
             cell = SIFT.SIFT_image(DAPI_image, atubulin_image, i)
             cell.find_atubulin_desc()
             
     DBSCAN.apply_DBSCAN(SIFT.desc_KMeans())
+#    tSNE.apply_tSNE(SIFT.desc_KMeans()) # if want to run tSNE after SIFT instead of DBSCAN
         
 
 if __name__ == "__main__":
+#    high_res_preprocessing.preprocess_high_res()
     generate_descriptors()
     
     
