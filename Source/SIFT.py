@@ -35,7 +35,7 @@ def get_descriptors():
     
     sift = cv2.xfeatures2d.SIFT_create(
             #edgeThreshold = 10,
-            nfeatures = 25,
+            nfeatures = 50,
             nOctaveLayers = 15,
             contrastThreshold = 0.005,
             sigma = 1
@@ -68,7 +68,7 @@ def desc_KMeans():
         hist_vec = hist_dic[key]
         hist_vec = np.append(hist_vec, key)
         hist_mat.append(hist_vec)
-        
+                
     return hist_mat
         
         
@@ -108,8 +108,8 @@ class SIFT_image:
     def find_atubulin_desc(self):    
         sift = cv2.xfeatures2d.SIFT_create(
                 #edgeThreshold = 10,
-                nfeatures = 50,
-                nOctaveLayers = 100,
+                nfeatures = 100,
+                nOctaveLayers = 250,
                 contrastThreshold = 0.005,
                 sigma = 3
                 )
@@ -120,8 +120,8 @@ class SIFT_image:
             d = np.append(d, self.image_id)     
             bag_of_atubulin_desc.append(d)
                     
-        img = cv2.drawKeypoints(self.atubulin, kp, self.atubulin.copy(), flags = cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-        display_image(img)
+#        img = cv2.drawKeypoints(self.atubulin, kp, self.atubulin.copy(), flags = cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+#        display_image(img)
         
     
     

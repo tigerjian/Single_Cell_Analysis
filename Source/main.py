@@ -13,6 +13,8 @@ import leastsq_LCM_calibration
 import high_res_preprocessing
 import SIFT
 import os
+import tSNE
+import DBSCAN
 
 def analyze_low_res():
     '''
@@ -63,17 +65,17 @@ def generate_descriptors():
 # =============================================================================
 #     Generates SIFT descriptors for every image/cell and applies KMeans
 # =============================================================================
-    for i in range(1,100):# file.num_high_res + 1):
+    for i in range(1,file.num_high_res + 1):
         parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
         image_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % i)
         if (os.path.isfile(image_path)):
-            print("Generating SIFT descriptors for image %d" % i)
+            #print("Generating SIFT descriptors for image %d" % i)
             DAPI_image = SIFT.get_high_res_image("DAPI_%d.tif" % i)
             atubulin_image = SIFT.get_high_res_image("atubulin_%d.tif" % i)
             cell = SIFT.SIFT_image(DAPI_image, atubulin_image, i)
             cell.find_atubulin_desc()
             
-    SIFT.desc_KMeans()
+    DBSCAN.apply_DBSCAN(SIFT.desc_KMeans())
         
 
 if __name__ == "__main__":
