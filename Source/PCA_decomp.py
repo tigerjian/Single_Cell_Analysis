@@ -30,7 +30,7 @@ def apply_PCA_decomp(image_mat):
 #        display_image(pca.components_[i].reshape(225,225))
 #    
 #    inv_mat = pca.inverse_transform(comp_mat)
-#    
+    
 #    for i in range(10): # displaying the eigencells
 #        display_image(inv_mat[i].reshape(225,225))
     

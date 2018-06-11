@@ -9,15 +9,15 @@ def apply_tSNE(hist_mat):
 #     This functions applies tSNE to hist_mat
 # =============================================================================
     
-    hist_vecs = np.asarray(hist_mat)[:, :-1]
+    hist_vecs = np.asarray(hist_mat)
     
     hist_mat_embedded = TSNE(
             n_components = 2,
-            perplexity = 8
+            perplexity = 5
             ).fit_transform(hist_vecs)
     
     hist_mat_clusters = DBSCAN(
-            eps = 10
+            eps = 5
         ).fit_predict(hist_mat_embedded)
     
     for i in range(1, file.num_high_res + 1):
