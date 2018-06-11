@@ -15,6 +15,7 @@ import SIFT
 import os
 import tSNE
 import DBSCAN
+import PCA_decomp
 
 
 def analyze_low_res():
@@ -74,15 +75,31 @@ def generate_descriptors():
             DAPI_image = SIFT.get_high_res_image("DAPI_%d.tif" % i)
             atubulin_image = SIFT.get_high_res_image("atubulin_%d.tif" % i)
             cell = SIFT.SIFT_image(DAPI_image, atubulin_image, i)
-            cell.find_atubulin_desc()
+            cell.find_DAPI_desc()
+
             
-    DBSCAN.apply_DBSCAN(SIFT.desc_KMeans())
-#    tSNE.apply_tSNE(SIFT.desc_KMeans()) # if want to run tSNE after SIFT instead of DBSCAN
+    #DBSCAN.apply_DBSCAN(SIFT.desc_KMeans())
+#    SIFT.desc_KMeans()
+    for i in range(10):
+        tSNE.apply_tSNE(SIFT.desc_KMeans()) # if want to run tSNE after SIFT instead of DBSCAN
+        
+def generate_PCA_features():
+    image_mat = []
+
+    for i in range(1,file.num_high_res + 1):
+        parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+        image_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % i)
+        if (os.path.isfile(image_path)):
+            flattened_image = PCA_decomp.get_high_res_image(image_path).flatten()
+            image_mat.append(flattened_image)
+            
+    comp_mat = PCA_decomp.apply_PCA_decomp(image_mat)
+    tSNE.apply_tSNE(comp_mat)
+    
         
 
 if __name__ == "__main__":
-#    high_res_preprocessing.preprocess_high_res()
-    generate_descriptors()
+    generate_PCA_features()
     
     
     

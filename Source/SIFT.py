@@ -5,8 +5,13 @@ import cv2
 import numpy as np
 from skimage.exposure import rescale_intensity
 from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
+
 
 bag_of_atubulin_desc = [] # stores all the descriptors found using SIFT
+bag_of_DAPI_desc = [] # stores all the descriptors found using SIFT
+
 
 hist_dic = {}
 
@@ -24,34 +29,31 @@ def get_high_res_image(name):
     image = rescale_intensity(image)
     
     return image
-
-def get_descriptors():
-# =============================================================================
-#     Returns the SIFT descriptors of an image
-#     
-# =============================================================================
-    atubulin = get_high_res_image("atubulin_284.tif")
-    display_image(atubulin)
-    
-    sift = cv2.xfeatures2d.SIFT_create(
-            #edgeThreshold = 10,
-            nfeatures = 50,
-            nOctaveLayers = 15,
-            contrastThreshold = 0.005,
-            sigma = 1
-            )
-    
-    kp, desc = sift.detectAndCompute(atubulin,None)
-    img = cv2.drawKeypoints(atubulin,kp,atubulin.copy(), flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-    
-    display_image(img)
     
 def desc_KMeans():
-    global hist_mat
     kmeans = KMeans(n_clusters = k)
-    desc = np.asarray(bag_of_atubulin_desc)[:,:-1]
+    desc = np.asarray(bag_of_DAPI_desc)[:,:-1]
+    
+    
+    
+    
+#    hist_mat_embedded = TSNE(
+#            n_components = 2,
+#            perplexity = 25
+#            ).fit_transform(desc)
+#    
+#    x = hist_mat_embedded[:,1]
+#    y = hist_mat_embedded[:,0]
+#    
+#    plt.figure(figsize = (15,15))
+#    plt.axis('equal')
+#    plt.scatter(x,y)
+#    plt.show()
+    
+    
+    
     cluster_ids = kmeans.fit_predict(desc)
-    image_ids = np.asarray(bag_of_atubulin_desc)[:,-1:]
+    image_ids = np.asarray(bag_of_DAPI_desc)[:,-1:]
         
     for image_id in np.unique(image_ids):
         hist_dic[int(image_id)] = np.zeros(k)
@@ -71,17 +73,6 @@ def desc_KMeans():
                 
     return hist_mat
         
-        
-
-        
-    
-    
-    
-    
-        
-        
-        
-    
 class SIFT_image:
 # =============================================================================
 #     Each object represents an image whose descriptors are to be found
@@ -94,16 +85,23 @@ class SIFT_image:
     def find_DAPI_desc(self):    
         sift = cv2.xfeatures2d.SIFT_create(
                 #edgeThreshold = 10,
-                nfeatures = 25,
-                nOctaveLayers = 15,
+                nfeatures = 50,
+                nOctaveLayers = 50,
                 contrastThreshold = 0.005,
-                sigma = 1
+                sigma = 3
                 )
         
         kp, desc = sift.detectAndCompute(self.DAPI,None)
         
-        img = cv2.drawKeypoints(self.DAPI, kp, self.DAPI.copy(), flags = cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-        display_image(img)
+        
+        for i in range(len(desc)):
+            if (kp[i].size > 25):
+                d = np.append(desc[i], self.image_id)     
+                bag_of_DAPI_desc.append(d)
+            
+        
+#        img = cv2.drawKeypoints(self.DAPI, kp, self.DAPI.copy(), flags = cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+#        display_image(img)
         
     def find_atubulin_desc(self):    
         sift = cv2.xfeatures2d.SIFT_create(
@@ -118,7 +116,7 @@ class SIFT_image:
         
         for d in desc:
             d = np.append(d, self.image_id)     
-            bag_of_atubulin_desc.append(d)
+            bag_of_DAPI_desc.append(d) # temporary test
                     
 #        img = cv2.drawKeypoints(self.atubulin, kp, self.atubulin.copy(), flags = cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 #        display_image(img)
