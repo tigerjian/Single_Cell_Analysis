@@ -5,7 +5,6 @@ from skimage.exposure import rescale_intensity
 import numpy as np
 from image_display import display_image
 
-
 def get_high_res_image(name):
 # =============================================================================
 #     Gets a a high res preprocessed image from the "High_Res_Input_Images_Processed" folder
@@ -21,7 +20,7 @@ def get_high_res_image(name):
 
 def apply_PCA_decomp(image_mat):
     pca = PCA(
-            n_components = 1000
+            n_components = 50
             )
     
     comp_mat = pca.fit_transform(image_mat)
@@ -30,7 +29,7 @@ def apply_PCA_decomp(image_mat):
 #        display_image(pca.components_[i].reshape(225,225))
 #    
 #    inv_mat = pca.inverse_transform(comp_mat)
-    
+#    
 #    for i in range(10): # displaying the eigencells
 #        display_image(inv_mat[i].reshape(225,225))
     

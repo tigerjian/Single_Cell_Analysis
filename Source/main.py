@@ -16,6 +16,7 @@ import os
 import tSNE
 import DBSCAN
 import PCA_decomp
+import ICA_decomp
 
 
 def analyze_low_res():
@@ -95,7 +96,6 @@ def generate_PCA_features():
             
     comp_mat = PCA_decomp.apply_PCA_decomp(image_mat)
     tSNE.apply_tSNE(comp_mat)
-    
         
 
 if __name__ == "__main__":

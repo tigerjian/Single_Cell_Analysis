@@ -13,7 +13,7 @@ def apply_tSNE(hist_mat):
     
     hist_mat_embedded = TSNE(
             n_components = 2,
-            perplexity = 5
+            perplexity = 3
             ).fit_transform(hist_vecs)
     
     hist_mat_clusters = DBSCAN(
