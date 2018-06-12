@@ -17,6 +17,7 @@ import tSNE
 import DBSCAN
 import PCA_decomp
 import ICA_decomp
+import DEC
 
 
 def analyze_low_res():
@@ -99,8 +100,7 @@ def generate_PCA_features():
         
 
 if __name__ == "__main__":
-#    generate_PCA_features()
-    high_res_preprocessing.preprocess_high_res()
+    DEC.run_DEC()
     
     
     
