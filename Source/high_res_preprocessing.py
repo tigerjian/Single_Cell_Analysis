@@ -51,8 +51,7 @@ def rotate_point(pivot, angle, length):
 # =============================================================================
     # move up by the radius
     x0, y0 = pivot[0], pivot[1] ### had to swap this. Tiger
-    x1, y1 = int(x0), int(y0 - length)
-    
+    x1, y1 = int(x0), int(y0 - length) 
 
     # then rotate
     x2 = x0 + math.cos(angle) * (x1 - x0) - math.sin(angle) * (y1 - y0) # Modified from https://stackoverflow.com/questions/34372480/rotate-point-about-another-point-in-degrees-python
@@ -74,7 +73,6 @@ def intensity_rotated_line(img,angle, pivot):
 
     # then rotate both points around
     x1, y1 = rotate_point(pivot, angle, c_w/2) ### Tiger.
-
 
     length = int(np.hypot(x1-x0, y1-y0)) # should be same as int(c_w/2)
     x, y = np.linspace(x0, x1, length), np.linspace(y0, y1, length)
@@ -257,18 +255,18 @@ def preprocess_high_res():
                     aligned_atubulin = rotateImage(atubulin, max_rotation, (round(x_center),round(y_center)))
                                       
                     # Save cropped image of aligned mitotic cell to folder.
-                    global num_cells
-                    num_cells += 1
-                    file_num = num_cells + 97
-                    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-                    DAPI_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % file_num)
-                    atubulin_path = os.path.join(parent, "High_Res_Input_Images_Processed", "atubulin_%d.tif" % file_num)
- #                    print("Number calls:",num_calls)
-                    
-                    
+#                    global num_cells
+#                    num_cells += 1
+#                    file_num = num_cells + 97
 #                    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-#                    DAPI_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % i)
-#                    atubulin_path = os.path.join(parent, "High_Res_Input_Images_Processed", "atubulin_%d.tif" % i)
+#                    DAPI_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % file_num)
+#                    atubulin_path = os.path.join(parent, "High_Res_Input_Images_Processed", "atubulin_%d.tif" % file_num)
+# #                    print("Number calls:",num_calls)
+                    
+                    
+                    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+                    DAPI_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % i)
+                    atubulin_path = os.path.join(parent, "High_Res_Input_Images_Processed", "atubulin_%d.tif" % i)
                     
                     DAPI_cropped = aligned_DAPI[y_min:y_max, x_min:x_max]
                     atubulin_cropped = aligned_atubulin[y_min:y_max, x_min:x_max]
