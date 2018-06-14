@@ -36,7 +36,7 @@ def analyze_low_res():
         image = low_res_analysis.Low_Res_Image(DAPI_img, pattern_img,i) 
         
         image.g_method_DAPI()
-        image.detect_pattern()
+        image.detect_DAPI()
         image.detect_objects()
         
         image.transform_coord(image_coord)

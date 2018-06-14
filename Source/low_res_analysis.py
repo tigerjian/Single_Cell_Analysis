@@ -22,6 +22,9 @@ cell_coord = []
 
 DAPI_dist = 30
 
+sep_dist = 100
+overlap_dist = 10
+
 total = 0
 
 def save_points():
@@ -157,25 +160,34 @@ class Low_Res_Image:
 #        display_image(im_with_keypoints)
         
     def detect_objects(self):
-        global total
         
-        for pat in self.g_DAPI_pts:
-            near_DAPI = False
-#            near_a_tubulin = False
-            
-            for DAPI in self.pattern_pts:
-                d = euc_dist(DAPI[0], DAPI[1], pat[0], pat[1])
-                if d < DAPI_dist:
-                    near_DAPI = True
+        for mitotic_nuc in self.g_DAPI_pts:
+            near_another_cell = False
+            for nuc in self.DAPI_pts:
+                d = euc_dist(mitotic_nuc[0], mitotic_nuc[1], nuc[0], nuc[1])
+                if (d < sep_dist and d >  overlap_dist): # check if cell is either far away enough or if same cell
+                    near_another_cell = True
                     
-#            for a_tubulin in self.a_tubulin_pts:
-#                d = euc_dist(a_tubulin[0], a_tubulin[1], pat[0], pat[1])
-#                if d < a_tubulin_dist:
-#                    near_a_tubulin = True
+            if (near_another_cell == True):
+                self.objects.append(mitotic_nuc)
+
             
-#            if near_DAPI and near_a_tubulin:
-            if near_DAPI:
-                self.objects.append(pat)
+#            near_DAPI = False
+##            near_a_tubulin = False
+#            
+#            for DAPI in self.pattern_pts:
+#                d = euc_dist(DAPI[0], DAPI[1], pat[0], pat[1])
+#                if d < DAPI_dist:
+#                    near_DAPI = True
+#                    
+##            for a_tubulin in self.a_tubulin_pts:
+##                d = euc_dist(a_tubulin[0], a_tubulin[1], pat[0], pat[1])
+##                if d < a_tubulin_dist:
+##                    near_a_tubulin = True
+#            
+##            if near_DAPI and near_a_tubulin:
+#            if near_DAPI:
+#                self.objects.append(pat)
         
     def transform_coord(self, image_coord):        
         image_x = float(image_coord[int(self.image_id)][0])

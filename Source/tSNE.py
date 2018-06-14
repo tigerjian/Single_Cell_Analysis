@@ -8,7 +8,7 @@ from sklearn.cluster import KMeans
 
 import file
 
-def apply_tSNE(hist_mat):
+def apply_tSNE(hist_mat, n, perp):
 # =============================================================================
 #     This functions applies tSNE to hist_mat
 # =============================================================================
@@ -17,7 +17,7 @@ def apply_tSNE(hist_mat):
     
     hist_mat_embedded = TSNE(
             n_components = 2,
-            perplexity = 3
+            perplexity = perp
             ).fit_transform(hist_vecs)
 #    print("hist_mat_embedded:",hist_mat_embedded)
     
@@ -29,7 +29,7 @@ def apply_tSNE(hist_mat):
     
     # Run k-means clustering on t-SNE output
     hist_mat_clusters = KMeans(
-            n_clusters = 5,
+            n_clusters = n,
             init = 'k-means++').fit_predict(hist_mat_embedded)
         
 #    for i in range(1, file.num_high_res + 1):
