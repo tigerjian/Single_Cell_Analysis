@@ -8,7 +8,7 @@ from sklearn.cluster import KMeans
 
 import file
 
-def apply_tSNE(hist_mat, n, perp):
+def apply_tSNE(hist_mat, n, perp, labels, do_kmeans):
 # =============================================================================
 #     This functions applies tSNE to hist_mat
 # =============================================================================
@@ -39,7 +39,11 @@ def apply_tSNE(hist_mat, n, perp):
     x = hist_mat_embedded[:,1]
     y = hist_mat_embedded[:,0]
     
-    cluster_labels = hist_mat_clusters
+    if (do_kmeans == True):
+        cluster_labels = hist_mat_clusters
+    else:
+        cluster_labels = labels
+        
     max_label = max(cluster_labels)
     print("max_label:",max_label)
     if max_label != -1:

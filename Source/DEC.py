@@ -25,12 +25,14 @@ ae_params = [[2, 16]]
 
 num_features = 100
 
-num_clusters = 7
+num_clusters = 5
 
 tSNE_perp = 20
 
-init_params_epoch = 50
+init_params_epoch = 100
 init_params_batch_size = 25
+
+num_opt_iter = 100
 
 class ClusteringLayer(Layer):
 
@@ -86,6 +88,8 @@ def create_autoencoder():
     input_img = Input(shape = (input_img_size, input_img_size, 1))
 
     encoder_layer = input_img
+    
+    global dropout
         
     for i in range(len(ae_params)):
         encoder_layer = Conv2D(ae_params[i][1], ae_params[i][0],
@@ -171,7 +175,7 @@ def init_params(image_mat):
     encoded_feats = encoder.predict(image_mat)
         
     for i in range(1):
-        tSNE.apply_tSNE(encoded_feats, num_clusters, tSNE_perp)
+        tSNE.apply_tSNE(encoded_feats, num_clusters, tSNE_perp, None, True)
     
 #    for i in range(10):
 #        display_image(rev_center_norm(image_mat[i].reshape(256,256)))
@@ -202,7 +206,7 @@ def opt_params(ae, image_mat):
     q, _ = opt_model.predict(image_mat, verbose = 0)
     p = target_distribution(q) 
 
-    for i in range(100):
+    for i in range(num_opt_iter):
         print("Iteration # %d" % (i + 1))
         if (i % 5):
             q, _ = opt_model.predict(image_mat, verbose = 0)
@@ -218,12 +222,11 @@ def opt_params(ae, image_mat):
     
     for i in range(len(pred_clusters)):
         print("Cluster for # %d:" % (i + 1), pred_clusters[i])
-
     
     encoded_feats = encoder.predict(image_mat)
-        
-    for i in range(1):
-        tSNE.apply_tSNE(encoded_feats, num_clusters, tSNE_perp)
+            
+    for i in range(5):
+        tSNE.apply_tSNE(encoded_feats, num_clusters, tSNE_perp, pred_clusters, False)
     
     
 
@@ -242,16 +245,12 @@ def run_DEC():
         if (os.path.isfile(image_path)):
             img = PCA_decomp.get_high_res_image(image_path)
             
-            z = np.zeros((256,256))
+            img = center_norm(img)
             
-            z[:225, :225] = img       
-            
-            z = center_norm(z)
-            
-            image_mat.append(z)
+            image_mat.append(img)
             
     image_mat = np.asarray(image_mat)
-    image_mat = np.reshape(image_mat, (file.num_high_res, 256, 256, 1))
+    image_mat = np.reshape(image_mat, (file.num_high_res - 1, 256, 256, 1))
     
 #    (x_train, _), (x_test, _) = mnist.load_data()
 #    x_test = x_test.astype('float32') / 255.
