@@ -27,13 +27,13 @@ def analyze_low_res():
     '''
     image_coord = file.get_low_res_coord()        
     
-    for i in range(1, file.num_low_res + 1):   
+    for i in range(1, file.num_low_res + 1): 
+#    for i in np.arange(1, file.num_low_res + 1, 500):
         print("Analyzing image %d" % i)
     
         DAPI_img = get_low_res_DAPI_image(file.DAPI_file % i)            
-        pattern_img = get_low_res_pattern_image(file.pattern_file % i)            
     
-        image = low_res_analysis.Low_Res_Image(DAPI_img, pattern_img,i) 
+        image = low_res_analysis.Low_Res_Image(DAPI_img,i) 
         
         image.g_method_DAPI()
         image.detect_DAPI()
@@ -99,11 +99,8 @@ def generate_PCA_features():
     tSNE.apply_tSNE(comp_mat)
         
 
-if __name__ == "__main__":
-    DEC.run_DEC()
-
-    generate_PCA_features()
-#    high_res_preprocessing.preprocess_high_res()
+if __name__ == "__main__":        
+    analyze_low_res()
     
     
     

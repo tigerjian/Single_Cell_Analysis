@@ -22,8 +22,9 @@ cell_coord = []
 
 DAPI_dist = 30
 
-sep_dist = 100
-overlap_dist = 10
+sep_dist = 150
+
+overlap_dist = 25
 
 total = 0
 
@@ -53,7 +54,7 @@ def get_low_res_DAPI_image(name):
     
     image = io.imread(image_path)        
     image = (image/20).astype("uint8")
-    #image = rescale_intensity(image)
+    image = rescale_intensity(image)
     
     return image
 
@@ -81,15 +82,13 @@ def euc_dist(x1, y1, x2, y2):
 
 class Low_Res_Image:
     
-    def __init__(self, DAPI, pattern, image_id):
+    def __init__(self, DAPI, image_id):
         self.image_id = image_id
         
         self.DAPI = DAPI  
-        self.pattern = pattern  
         
         self.DAPI_pts = []
         self.a_tubulin_pts = []
-        self.pattern_pts = []
         self.g_DAPI_pts = []
         
         self.objects = []
@@ -102,8 +101,11 @@ class Low_Res_Image:
         params.filterByCircularity = False
         params.filterByConvexity = False
         params.filterByInertia = False
-        params.filterByArea = False
-        params.minThreshold = 100
+        params.filterByArea = True
+        params.minArea = 50
+        params.minThreshold = 2
+#        params.maxArea = 250
+        params.maxArea = 50000
 
         detector = cv2.SimpleBlobDetector_create(params)
         
@@ -168,7 +170,7 @@ class Low_Res_Image:
                 if (d < sep_dist and d >  overlap_dist): # check if cell is either far away enough or if same cell
                     near_another_cell = True
                     
-            if (near_another_cell == True):
+            if (near_another_cell == False):
                 self.objects.append(mitotic_nuc)
 
             
@@ -216,8 +218,13 @@ class Low_Res_Image:
 
 
     def g_method_DAPI(self):
-        thresh = threshold_otsu(self.DAPI)
-        DAPI_thresh = self.DAPI > thresh
+        
+        DAPI_blurr = gaussian(self.DAPI,3)
+                
+        
+        thresh = threshold_otsu(DAPI_blurr)
+        DAPI_thresh = DAPI_blurr > thresh
+        
         DAPI_cleared = clear_border(DAPI_thresh)
         
         DAPI_labeled = label(DAPI_cleared)
@@ -229,19 +236,19 @@ class Low_Res_Image:
             blob = region.intensity_image
             std = np.nanstd(np.where(np.isclose(blob,0), np.nan, blob))
             
-            g_value = (intensity) * (std)**3 / (area)
-                                                
-            if g_value > 500 and area > 100 and area < 3000:
+            g_value = std
+            
+            if g_value > 10 and area > 10 and area < 10000:
                 x = region.centroid[0]
                 y = region.centroid[1]
                 
                 self.g_DAPI_pts.append([y, x])
                 
             
-#        fig, ax = plt.subplots(1, figsize = (30,30))
-        
-                
-#        # adding labels
+#        fig, ax = plt.subplots(1, figsize = (15,15))
+#        
+#                
+##         adding labels
 #        for i in range(len(self.g_DAPI_pts)):
 #            c = plt.Circle((self.g_DAPI_pts[i][0], self.g_DAPI_pts[i][1]), 30, color = 'red', linewidth = 1, fill = False)
 #            ax.add_patch(c)

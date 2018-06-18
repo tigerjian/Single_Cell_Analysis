@@ -21,11 +21,13 @@ from sklearn.cluster import KMeans
 input_img_size = 256
 
 # ae is short for autoencoder
-ae_params = [[2, 16]]
+ae_params = [[2, 8],
+             [2, 8],
+             [2, 8]]
 
 num_features = 100
 
-num_clusters = 5
+num_clusters = 4
 
 tSNE_perp = 20
 
@@ -220,10 +222,17 @@ def opt_params(ae, image_mat):
     q, _ = opt_model.predict(image_mat, verbose = 0)
     pred_clusters = q.argmax(1)
     
-    for i in range(len(pred_clusters)):
-        print("Cluster for # %d:" % (i + 1), pred_clusters[i])
+#    for i in range(len(pred_clusters)):
+#        print("Cluster for # %d:" % (i + 1), pred_clusters[i])
     
     encoded_feats = encoder.predict(image_mat)
+    
+    cluster_hist = np.zeros(num_clusters)
+    
+    for i in range(len(pred_clusters)):
+        cluster_hist[pred_clusters[i]] += 1
+        
+    print(cluster_hist)
             
     for i in range(5):
         tSNE.apply_tSNE(encoded_feats, num_clusters, tSNE_perp, pred_clusters, False)
