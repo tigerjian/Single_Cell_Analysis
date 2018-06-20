@@ -8,6 +8,7 @@ hr_DAPI = "DAPI_atubulin_60X_1_%.4d_R3D_D3D_PRJ_w435.tif"
 hr_atubulin = "DAPI_atubulin_60X_1_%.4d_R3D_D3D_PRJ_w523.tif"
 hr_pattern = "DAPI_atubulin_pattern_all_1_%.3d_R3D_D3D_PRJ_w676.tif"
 
+
 pre_LCM = "pre_LCM"
 
 num_low_res = 1113

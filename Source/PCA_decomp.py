@@ -25,8 +25,8 @@ def apply_PCA_decomp(image_mat):
     
     comp_mat = pca.fit_transform(image_mat)
     
-    for i in range(25): # displaying the eigencells
-        display_image(pca.components_[i].reshape(256,256))
+#    for i in range(25): # displaying the eigencells
+#        display_image(pca.components_[i].reshape(256,256))
 #    
 #    inv_mat = pca.inverse_transform(comp_mat)
 #    

@@ -7,11 +7,17 @@ from sklearn.cluster import DBSCAN
 from sklearn.cluster import KMeans
 
 import file
+import image_display
+
+
+x =[]
+y = []
 
 def apply_tSNE(hist_mat, n, perp, labels, do_kmeans):
 # =============================================================================
 #     This functions applies tSNE to hist_mat
 # =============================================================================
+    global x, y
     
     hist_vecs = np.asarray(hist_mat)
     
@@ -44,25 +50,30 @@ def apply_tSNE(hist_mat, n, perp, labels, do_kmeans):
     else:
         cluster_labels = labels
         
-    max_label = max(cluster_labels)
-    print("max_label:",max_label)
-    if max_label != -1:
-        num_clusters = max_label + 1 # cluster labels go from -1 to max_label incrementally
-    else:
-        num_clusters = 1
-    
-    plt.figure(figsize = (10,10))
-    plt.axis('equal')
-    # scatter with colormap mapping to the cluster labels from DBSCAN or k-means (returned as array)
-    color_map = plt.get_cmap("viridis")
-    if max_label != -1:
-        norm = matplotlib.colors.BoundaryNorm(np.arange(0,num_clusters + 1,1), color_map.N)
-        plt.scatter(x,y,s=25,c=cluster_labels, marker = 'o', cmap = color_map, norm = norm );
-        plt.colorbar()
-    plt.scatter(x,y,s=25,c=cluster_labels, marker = 'o', cmap = color_map );
-    plt.show()
-        
 
+    
+    ## Display interactive, color-coded t-SNE plot    
+    # I don't know where the image ID labels come from. Manually:
+    test_ID = [i for i in range(126) if i != 43]
+    
+    # Make a dictionary where keys are cluster assignments and values are the values
+    # Doing this to verify that my interactive plot displays the correct images.
+    #  Result: the images do appear to match their cluster assignment!
+    cluster_ID_dict = {}
+    for key,value in zip(cluster_labels,test_ID):
+        if key not in cluster_ID_dict:
+            cluster_ID_dict[key]=[value]
+        else:
+            cluster_ID_dict[key].append(value)
+    print(cluster_ID_dict)
+    
+    image_display.interactive_plot(test_ID, cluster_labels, x, y)   
+
+      
+#    ## Display non-interactive color-coded t-SNE plot
+#    image_display.display_color_coded_plot(x, y, cluster_labels, 'viridis', (10,10)) # for t-SNE plot
+
+    
 
 
     
