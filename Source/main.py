@@ -18,6 +18,7 @@ import DBSCAN
 import PCA_decomp
 import ICA_decomp
 import DEC
+import DEC_w_VAE
 
 
 def analyze_low_res():
@@ -49,7 +50,7 @@ def analyze_low_res():
     DV_calibration.generate_coord(low_res_analysis.cell_coord)
     
 def analyze_high_res():
-    for i in range(600,700):
+    for i in range(1,10):
         print("Image %d" % i)
         DAPI = high_res_analysis.get_high_res_image(file.hr_DAPI % i)
         atubulin = high_res_analysis.get_high_res_image(file.hr_atubulin % i)
@@ -100,8 +101,9 @@ def generate_PCA_features():
         
 
 if __name__ == "__main__":        
-    analyze_low_res()
-    
+    DEC.run_DEC()    
+#    high_res_preprocessing.preprocess_high_res()
+#    LCM_calibration()
     
     
     

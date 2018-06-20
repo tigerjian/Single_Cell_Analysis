@@ -1,10 +1,11 @@
-from keras.layers import Input, Conv2D, Dense, Flatten, Reshape, Conv2DTranspose, MaxPooling2D, UpSampling2D, Dropout, BatchNormalization
+from keras.layers import Input, Conv2D, Dense, Flatten, Reshape, Conv2DTranspose, MaxPooling2D, UpSampling2D, Dropout, BatchNormalization, Lambda
 from keras.models import Model
 from keras.backend import int_shape
 from keras.engine.topology import Layer, InputSpec
 import keras.backend as K
 from keras.datasets import mnist
-
+from keras.losses import mse
+from keras import objectives
 
 import numpy as np
 import os
@@ -20,23 +21,24 @@ from skimage import io
 
 # Parameters
 
-num_channels = 2
+num_channels = 1
 
 input_img_size = 256
 
 # ae is short for autoencoder
-ae_params = [[10, 64]]
+ae_params = [[10, 16],
+             [10, 32]]
 
-num_features = 25
+num_features = 100
 
-num_clusters = 4
+num_clusters = 5
 
 tSNE_perp = 20
 
-init_params_epoch = 100
+init_params_epoch = 25
 init_params_batch_size = 50
 
-num_opt_iter = 100
+num_opt_iter = 250
 
 opt_update_interval = 5
 
@@ -44,48 +46,13 @@ opt_batch_size = 50
 
 ID_list = []
 
-artificial_abn = [22,
-                36,
-                167,
-                287,
-                432,
-                697,
-                1151,
-                1169,
-                1474,
-                1646,
-                1647,
-                1693,
-                1803,
-                1855,
-                1863,
-                1873,
-                1942,
-                1950,
-                2007,
-                2075,
-                2086,
-                2118,
-                2239,
-                2365,
-                2471,
-                2536,
-                2588,
-                2619,
-                2633,
-                2677,
-                2720,
-                2814,
-                2828,
-                2850,
-                3027,
-                3083,
-                3117,
-                3376,
-                3559,
-                3591,
-                3612,
-                3745]
+def sampling(args):
+    z_mean, z_log_var = args
+    batch = K.shape(z_mean)[0]
+    dim = K.int_shape(z_mean)[1]
+    # by default, random_normal has mean=0 and std=1.0
+    epsilon = K.random_normal(shape=(batch, dim))
+    return z_mean + K.exp(0.5 * z_log_var) * epsilon
 
 def get_high_res_image(name):
 # =============================================================================
@@ -147,7 +114,11 @@ def rev_center_norm(image):
     print(np.mean(rescaled))
     return rescaled
 
+z_mean = 0
+z_log_var = 0
+
 def create_autoencoder():
+    global z_mean, z_log_var
 # =============================================================================
 #     This function creates the a Kera autoencoder model
 # =============================================================================
@@ -165,23 +136,36 @@ def create_autoencoder():
                                strides = 2
                                )(encoder_layer)
         
-        encoder_layer = MaxPooling2D(8, padding='same')(encoder_layer)
+#        encoder_layer = MaxPooling2D(2, padding='same')(encoder_layer)
                 
     pre_flatten_shape = int_shape(encoder_layer)
             
     encoder_flatten = Flatten()(encoder_layer)
     
     encoder_flatten = Dropout(0.1)(encoder_flatten)
-            
-    feature_vec = Dense(num_features,
-                        kernel_initializer = 'glorot_uniform'
+    
+    feature_mean = Dense(num_features,
+                        kernel_initializer = 'glorot_uniform',
+                        name = 'feature_mean'
                         )(encoder_flatten)
     
-    feature_vec = Dropout(0.1)(feature_vec)
+    feature_log_var = Dense(num_features,
+                        kernel_initializer = 'glorot_uniform',
+                        name ='feature_log_var'
+                        )(encoder_flatten)
+    
+    z_mean = feature_mean
+    z_log_var = feature_log_var
+    
+    features = Lambda(sampling, 
+                      output_shape = (num_features,), 
+                      name = 'features')([feature_mean, feature_log_var])
+
+    features = Dropout(0.1)(features)
     
     decoder_layer = Dense(int_shape(encoder_flatten)[1],
                           kernel_initializer = 'glorot_uniform'
-                          )(feature_vec)
+                          )(features)
     
     decoder_layer = Dropout(0.1)(decoder_layer)
     
@@ -195,7 +179,7 @@ def create_autoencoder():
                                strides = 2
                                )(decoder_layer)
         
-        decoder_layer = UpSampling2D(8)(decoder_layer)
+#        decoder_layer = UpSampling2D(2)(decoder_layer)
         
 
     decoded = Conv2DTranspose(num_channels, 2,
@@ -205,12 +189,22 @@ def create_autoencoder():
                      strides = 2
                      )(decoder_layer)
     
-    decoded = UpSampling2D(8)(decoded)
+#    decoded = UpSampling2D(2)(decoded)
     
-    autoencoder = Model(input_img, decoded)    
-    encoder = Model(input_img, feature_vec)
+    autoencoder = Model(input_img, decoded)   
     
-    return (autoencoder, encoder)
+    encoder = Model(input_img, [feature_mean, feature_log_var, features])
+    
+    return (autoencoder, encoder, feature_mean, feature_log_var)
+
+def vae_loss(y_true, y_pred):
+    """ Calculate loss = reconstruction loss + KL loss for each data in minibatch """
+    # E[log P(X|z)]
+    recon = K.mean(objectives.mean_squared_error(y_true, y_pred))
+
+    kl = 0.5 * K.sum(K.exp(z_log_var) + K.square(z_mean) - 1. - z_log_var, axis=1)
+
+    return recon + kl
     
 def init_params(image_mat):
 # =============================================================================
@@ -222,9 +216,10 @@ def init_params(image_mat):
     autoencoder = ae[0]
     encoder = ae[1]
     
-    autoencoder.compile(optimizer = 'adam',
-                        loss = 'mean_squared_error')
+
     
+    autoencoder.compile(optimizer = 'adam',
+                        loss = vae_loss) 
     
     autoencoder.fit(image_mat, image_mat,
                     epochs = init_params_epoch,
@@ -238,14 +233,14 @@ def init_params(image_mat):
 #    encoder.save_weights(path)
     
     decoded_imgs = autoencoder.predict(image_mat)
-    encoded_feats = encoder.predict(image_mat)
+    encoded_feats = encoder.predict(image_mat)[2]
         
     for i in range(1):
         tSNE.apply_tSNE(encoded_feats, num_clusters, tSNE_perp, None, True)
     
-#    for i in range(10):
-#        display_image(rev_center_norm(image_mat[i].reshape(256,256)))
-#        display_image(rev_center_norm(decoded_imgs[i].reshape(256,256)))
+    for i in range(10):
+        display_image(rev_center_norm(image_mat[i].reshape(256,256)))
+        display_image(rev_center_norm(decoded_imgs[i].reshape(256,256)))
         
     return (autoencoder, encoder)
 
@@ -295,14 +290,16 @@ def opt_params(ae, image_mat):
     autoencoder = ae[0]
     encoder = ae[1]
     
-    clustering_layer = ClusteringLayer(num_clusters, name = 'clustering')(encoder.output)
+    clustering_layer = ClusteringLayer(num_clusters, name = 'clustering')(encoder.output[2])
+    
     opt_model = Model(inputs = encoder.input, outputs = [clustering_layer, autoencoder.output])
-    opt_model.compile(loss = ['kld', 'mse'],
+    
+    opt_model.compile(loss = ['kld', vae_loss],
                       loss_weights = [0.1, 1],
                       optimizer = 'adam')
     
     kmeans = KMeans(n_clusters = num_clusters, n_init = 20)
-    pred_clusters = kmeans.fit_predict(encoder.predict(image_mat))
+    pred_clusters = kmeans.fit_predict(encoder.predict(image_mat)[2])
     opt_model.get_layer(name = 'clustering').set_weights([kmeans.cluster_centers_])
     
     print(opt_model.metrics_names)
@@ -343,26 +340,18 @@ def opt_params(ae, image_mat):
 
             
             
-#        if (index + 1) * opt_batch_size > image_mat_sampled.shape[0]:
-#            loss = opt_model.train_on_batch(x = image_mat_sampled[index * opt_batch_size::],
-#                                             y=[p[index * opt_batch_size::], image_mat_sampled[index * opt_batch_size::]])
-#            index = 0
-#        else:
-#            loss = opt_model.train_on_batch(x = image_mat_sampled[index * opt_batch_size:(index + 1) * opt_batch_size],
-#                                             y=[p[index * opt_batch_size:(index + 1) * opt_batch_size],
-#                                                image_mat_sampled[index * opt_batch_size:(index + 1) * opt_batch_size]])
-#            index += 1
+        if (index + 1) * opt_batch_size > image_mat_sampled.shape[0]:
+            loss = opt_model.train_on_batch(x = image_mat_sampled[index * opt_batch_size::],
+                                             y=[p[index * opt_batch_size::], image_mat_sampled[index * opt_batch_size::]])
+            index = 0
+        else:
+            loss = opt_model.train_on_batch(x = image_mat_sampled[index * opt_batch_size:(index + 1) * opt_batch_size],
+                                             y=[p[index * opt_batch_size:(index + 1) * opt_batch_size],
+                                                image_mat_sampled[index * opt_batch_size:(index + 1) * opt_batch_size]])
+            index += 1
             
-        loss = opt_model.train_on_batch(x = image_mat_sampled,
-                                         y = [p, image_mat_sampled])
-
-        print(loss)
-        
-    for i in range(10):
-        print("Iteration # %d" % (i + 1))
-              
-        loss = opt_model.train_on_batch(x = image_mat_sampled,
-                                         y =[p, image_mat_sampled])
+#        loss = opt_model.train_on_batch(x = image_mat,
+#                                         y=[p, image_mat])
 
         print(loss)
         
@@ -398,26 +387,21 @@ def run_DEC():
 #     (2) Parameter Optimization
 # =============================================================================
     image_mat = []
-    
-    ids = np.arange(1,250,1)
-    
-    for i in artificial_abn:
-        ids = np.append(ids, i)
-        
-    for i in ids:
+
+    for i in range(1, 250):
         parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
         DAPI_image_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % i)
         if (os.path.isfile(DAPI_image_path)):
             ID_list.append(i)
             DAPI = get_high_res_image("DAPI_%d.tif" % i)
-            atubulin = get_high_res_image("atubulin_%d.tif" % i)
+#            atubulin = get_high_res_image("atubulin_%d.tif" % i)
 #            
             DAPI = center_norm(DAPI)
-            atubulin = center_norm(atubulin)
+#            atubulin = center_norm(atubulin)
 #            
-            img_stack = np.dstack((atubulin, DAPI))
+#            img_stack = np.dstack((atubulin, DAPI))
             
-            image_mat.append(img_stack)
+            image_mat.append(DAPI)
             
     image_mat = np.asarray(image_mat)
     image_mat = np.reshape(image_mat, (len(image_mat), 256, 256, num_channels))

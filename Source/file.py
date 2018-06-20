@@ -4,14 +4,14 @@ DAPI_file = "scan5_R3D_PRJ_w435_t%.4d.tif"
 pattern_file = "DAPI_atubulin_20x_1_R3D_PRJ_w676_t%.3d.tif"
 low_res_log = "scan5_R3D.dv.log"
 
-hr_DAPI = "20180607_low_circle_1_DAPI_a_tubulin_CEP135_pattern_03_%.2d_R3D_D3D_PRJ_w435.tif"
-hr_atubulin = "20180607_low_circle_1_DAPI_a_tubulin_CEP135_pattern_03_%.2d_R3D_D3D_PRJ_w523.tif"
+hr_DAPI = "DAPI_atubulin_60X_1_%.4d_R3D_D3D_PRJ_w435.tif"
+hr_atubulin = "DAPI_atubulin_60X_1_%.4d_R3D_D3D_PRJ_w523.tif"
 hr_pattern = "DAPI_atubulin_pattern_all_1_%.3d_R3D_D3D_PRJ_w676.tif"
 
 pre_LCM = "pre_LCM"
 
 num_low_res = 1113
-num_high_res = 127
+num_high_res = 4000
 
 def get_low_res_coord():
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))

@@ -56,7 +56,7 @@ def apply_tSNE(hist_mat, n, perp, labels, do_kmeans):
     # scatter with colormap mapping to the cluster labels from DBSCAN or k-means (returned as array)
     color_map = plt.get_cmap("viridis")
     if max_label != -1:
-        norm = matplotlib.colors.BoundaryNorm(np.arange(-1,num_clusters+1,1), color_map.N)
+        norm = matplotlib.colors.BoundaryNorm(np.arange(0,num_clusters + 1,1), color_map.N)
         plt.scatter(x,y,s=25,c=cluster_labels, marker = 'o', cmap = color_map, norm = norm );
         plt.colorbar()
     plt.scatter(x,y,s=25,c=cluster_labels, marker = 'o', cmap = color_map );

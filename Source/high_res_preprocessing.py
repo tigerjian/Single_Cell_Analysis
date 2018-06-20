@@ -14,6 +14,8 @@ import math
 from math import pi
 import cv2
 from matplotlib.lines import Line2D
+from skimage.exposure import rescale_intensity
+
 
 
 c_w = 256 # set cropped image width. The CNN likes factors of 2.
@@ -161,7 +163,7 @@ def preprocess_high_res():
 #         - flips images so that brightest DAPI in upper left (flipped vertically, then horizontally)
 #     Note: saves channels separately to preserve bit depth
 # =============================================================================
-    for i in range(1,file.num_high_res + 1):
+    for i in range(1, file.num_high_res + 1):
         if i == 0: # edit this if removed points from point list manually before acquisition, or somehow missing points
             continue
         else:
@@ -177,13 +179,13 @@ def preprocess_high_res():
             num_nucleus = 0 # initialize the numer of nuclei found per image as zero
             
             properties = regionprops(labeled_DAPI, DAPI)
-                    
+                                
             for j in range(len(properties)): # identifies nuclei
-                if properties[j].area > 2500 and properties[j].area < 30000: # initially 2500, 10000
+                if properties[j].area > 3000 and properties[j].area < 50000: # initially 2500, 10000
                     num_nucleus += 1
                     ID = j
                     
-                   
+                  
             if (num_nucleus == 1): # removes multiple cells / telophase
                 global num_cells
 
@@ -191,8 +193,9 @@ def preprocess_high_res():
                 area = properties[ID].area
                 blob = properties[ID].intensity_image
                 std = np.nanstd(np.where(np.isclose(blob,0), np.nan, blob))
-                g_value = (intensity) * (std)**3 / (area)
+                g_value = (std)**3 / (area)
                 
+                                                                
                 #### I've changed these - swapped compared to Tiger's old code. ####
                 y_center = properties[ID].centroid[0]
                 x_center = properties[ID].centroid[1]
@@ -215,15 +218,16 @@ def preprocess_high_res():
                     y_max += c_w
                         
                 
-                if (g_value > 70000000): # We've found a mitotic cell. Initially set to 75000000
+                if (g_value > 500000): # We've found a mitotic cell. Initially set to 75000000
                     
                     # Instead of rotating image, want to rotate line of around the original image.
                     # Blur the image first with Gaussian filter.
                     DAPI_blurred = gaussian(DAPI, sigma = 3)
+                    atubulin_blurred = gaussian(atubulin, sigma = 3)
                     result = []
                     fractions = 360 # how many rotated lines to test. 25 is plenty.
                     for k in range(fractions):
-                        result.append(intensity_rotated_line(DAPI_blurred, 2*pi*k/fractions, (round(x_center),round(y_center))))                    
+                        result.append(intensity_rotated_line(atubulin_blurred, 2*pi*k/fractions, (round(x_center),round(y_center))))                    
                     index_max_rotation = np.argmax(result) # the index corresponding to the angle where the line integral is maximal
                     # Convert from index to angle
                     max_rotation = (index_max_rotation) * 2*pi / fractions
@@ -271,14 +275,26 @@ def preprocess_high_res():
                     DAPI_cropped = aligned_DAPI[y_min:y_max, x_min:x_max]
                     atubulin_cropped = aligned_atubulin[y_min:y_max, x_min:x_max]
                     
+                    DAPI_std = np.std(DAPI_cropped)
+                    atubulin_std = np.std(atubulin_cropped)
+                    
+                    DAPI_mean = np.mean(DAPI_cropped)
+                    atubulin_mean = np.mean(atubulin_cropped)
+                    
+                    DAPI_cropped = np.clip(DAPI_cropped, DAPI_mean + DAPI_std * 1, float("inf")).astype("uint16")
+                    atubulin_cropped = np.clip(atubulin_cropped, atubulin_mean + atubulin_std * 1, float("inf")).astype("uint16") 
+                    
+                    DAPI_cropped = rescale_intensity(DAPI_cropped)
+                    atubulin_cropped = rescale_intensity(atubulin_cropped)
+
+                    
 #                    print("Aligned and cropped DAPI:")
-#                    display_image(DAPI_cropped)                   
                     
                     # Continue by flipping the cropped images to get the area of highest pixel intensity in a corner.
                     # Flip cropped images vertically so total DAPI intensity is higher in top half
                     y_cent = round(DAPI_cropped.shape[0]/2) # number of pixels in y-dir
                     x_cent = round(DAPI_cropped.shape[1]/2) # number of pixels in x-dir (should be same as y-dir). Don't think my code here is correct.
-                    channels_to_flip = [DAPI_cropped, atubulin_cropped]
+                    channels_to_flip = [atubulin_cropped, DAPI_cropped]
                     channels_DAPI_brighter_top = flip_all_if_brighter(channels_to_flip, y_cent, 'vertical') # list of all flipped images
                     channels_DAPI_brighter_left = flip_all_if_brighter(channels_DAPI_brighter_top, x_cent, 'horizontal') # list of all flipped images
                 
@@ -286,8 +302,8 @@ def preprocess_high_res():
                     DAPI_processed = channels_DAPI_brighter_left[0]
                     atubulin_processed = channels_DAPI_brighter_left[1]
                     
-                    print("Processed DAPI:")
-                    display_image(DAPI_processed)
+#                    print("Processed DAPI:")
+#                    display_image(DAPI_processed)
 
                     
                     io.imsave(DAPI_path, DAPI_processed) 

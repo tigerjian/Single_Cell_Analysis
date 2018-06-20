@@ -48,10 +48,10 @@ def display_plot_image(image_file, cell):
     plt.show()   
     
 def write_rectangle(point_id, f, x, y):
-    x_tl = x - 50
-    y_tl = y - 50
-    x_br = x + 50
-    y_br = y + 50
+    x_tl = x - 30
+    y_tl = y - 30
+    x_br = x + 30
+    y_br = y + 30
     
     f.write("\nRectangle	green	2	%d	1,1\n" % point_id)
     f.write(".	%.1f,%.1f\t%.1f,%.1f" %(x_tl, y_tl, x_br, y_br))
@@ -63,7 +63,7 @@ def write_point(point_id, f, x, y):
 def get_points():
     
     parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-    path = os.path.join(parent, "Manual", "abnormal.txt")
+    path = os.path.join(parent, "Manual", "WT.txt")
     
     f = open(path, "r")
     file_lines = f.readlines()
