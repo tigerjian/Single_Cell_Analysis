@@ -8,6 +8,7 @@ hr_DAPI = "20180607_low_circle_1_DAPI_a_tubulin_CEP135_pattern_03_%.2d_R3D_D3D_P
 hr_atubulin = "20180607_low_circle_1_DAPI_a_tubulin_CEP135_pattern_03_%.2d_R3D_D3D_PRJ_w523.tif"
 hr_pattern = "DAPI_atubulin_pattern_all_1_%.3d_R3D_D3D_PRJ_w676.tif"
 
+
 pre_LCM = "pre_LCM"
 
 num_low_res = 608

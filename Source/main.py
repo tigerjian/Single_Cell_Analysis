@@ -96,12 +96,11 @@ def generate_PCA_features():
             image_mat.append(flattened_image)
             
     comp_mat = PCA_decomp.apply_PCA_decomp(image_mat)
-    tSNE.apply_tSNE(comp_mat)
-        
+    tSNE.apply_tSNE(comp_mat, n=2, perp = 5, labels = None, do_kmeans = True)
+
 
 if __name__ == "__main__":
-    DEC.run_DEC()
-
+#    DEC.run_DEC()
     generate_PCA_features()
 #    high_res_preprocessing.preprocess_high_res()
     

@@ -17,6 +17,10 @@ from matplotlib.lines import Line2D
 
 
 c_w = 256 # set cropped image width. The CNN likes factors of 2.
+min_area_threshold = 2500 # set threshold for minimum DAPI area
+max_area_threshold = 30000 # set threshold for maximum DAPI area
+g_value_threshold = 100000 # set threshold for g-value
+
 num_cells = 0
 
 def get_high_res_image(name):
@@ -72,7 +76,7 @@ def intensity_rotated_line(img,angle, pivot):
     x0, y0 = pivot[0], pivot[1]
 
     # then rotate both points around
-    x1, y1 = rotate_point(pivot, angle, c_w/2) ### Tiger.
+    x1, y1 = rotate_point(pivot, angle, c_w/2)
 
     length = int(np.hypot(x1-x0, y1-y0)) # should be same as int(c_w/2)
     x, y = np.linspace(x0, x1, length), np.linspace(y0, y1, length)
@@ -105,7 +109,7 @@ def pad_image(img):
 #     Pads images by c_w on each side. Returns the padded image.
 # =============================================================================
     global c_w
-    # Make array of zeros, adding padding of size crop width to all sides of the image
+    # Make array of zeros, padding all sides of the image by the size of the crop width
     y = img.shape[0] + 2*c_w
     x = img.shape[1] + 2*c_w
     shape = (y,x)
@@ -115,7 +119,7 @@ def pad_image(img):
     result[c_w:img.shape[0]+c_w, c_w:img.shape[1]+c_w] = img
     return result
     
-    # Both of the following are fairly slow:
+    # Both of the following are fairly slow, though functional:
 #    padded = np.pad(img, ((c_w,c_w),(c_w,c_w)), mode = 'constant', )
 #    padded = cv2.copyMakeBorder(img, c_w, c_w, c_w, c_w, cv2.BORDER_CONSTANT,value=0)
 #    return padded
@@ -124,12 +128,13 @@ def pad_image(img):
 def flip_all_if_brighter(channels, fold_line, axis):
 # =============================================================================
 #     Note: Assumming DAPI will always be the zeroth index of channels (which should be a list of images)
+#     - the reference image used for the flipping is assumed to be in the zeroth index of the "channels" list
 #     Output: list containing flipped images for all channels
 # =============================================================================
 #    print("len(channels):", len(channels))
     flipped_images = []
     for j in range(len(channels)):     
-        flipped_images.append(channels[j]) # initialize filled_images with the initial images
+        flipped_images.append(channels[j]) # initialize flipped_images with the initial images
     ref_image = channels[0] # In our case, this will be DAPI
     if axis == 'vertical':
         # Find intensities of upper and lower half of image in DAPI channel
@@ -161,6 +166,7 @@ def preprocess_high_res():
 #         - flips images so that brightest DAPI in upper left (flipped vertically, then horizontally)
 #     Note: saves channels separately to preserve bit depth
 # =============================================================================
+    
     for i in range(1,file.num_high_res + 1):
         if i == 0: # edit this if removed points from point list manually before acquisition, or somehow missing points
             continue
@@ -179,7 +185,7 @@ def preprocess_high_res():
             properties = regionprops(labeled_DAPI, DAPI)
                     
             for j in range(len(properties)): # identifies nuclei
-                if properties[j].area > 2500 and properties[j].area < 30000: # initially 2500, 10000
+                if properties[j].area > min_area_threshold and properties[j].area < max_area_threshold: # initially 2500, 10000
                     num_nucleus += 1
                     ID = j
                     
@@ -215,13 +221,13 @@ def preprocess_high_res():
                     y_max += c_w
                         
                 
-                if (g_value > 70000000): # We've found a mitotic cell. Initially set to 75000000
+                if (g_value > g_value_threshold): # We've found a mitotic cell.
                     
                     # Instead of rotating image, want to rotate line of around the original image.
-                    # Blur the image first with Gaussian filter.
+                    # Blur the reference image first with Gaussian filter.
                     DAPI_blurred = gaussian(DAPI, sigma = 3)
                     result = []
-                    fractions = 360 # how many rotated lines to test. 25 is plenty.
+                    fractions = 360 # how many rotated lines/potential axes to test.
                     for k in range(fractions):
                         result.append(intensity_rotated_line(DAPI_blurred, 2*pi*k/fractions, (round(x_center),round(y_center))))                    
                     index_max_rotation = np.argmax(result) # the index corresponding to the angle where the line integral is maximal
@@ -253,26 +259,11 @@ def preprocess_high_res():
                     # To do this, need to rotate CW by 2*pi-max_rotation (or CCW by max_rotation, but the rotate function goes CCW)
                     aligned_DAPI = rotateImage(DAPI, max_rotation, (round(x_center),round(y_center))) # Note that rotateImage takes point as (x,y) coordinate
                     aligned_atubulin = rotateImage(atubulin, max_rotation, (round(x_center),round(y_center)))
-                                      
-                    # Save cropped image of aligned mitotic cell to folder.
-#                    global num_cells
-#                    num_cells += 1
-#                    file_num = num_cells + 97
-#                    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-#                    DAPI_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % file_num)
-#                    atubulin_path = os.path.join(parent, "High_Res_Input_Images_Processed", "atubulin_%d.tif" % file_num)
-# #                    print("Number calls:",num_calls)
                     
-                    
-                    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-                    DAPI_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % i)
-                    atubulin_path = os.path.join(parent, "High_Res_Input_Images_Processed", "atubulin_%d.tif" % i)
                     
                     DAPI_cropped = aligned_DAPI[y_min:y_max, x_min:x_max]
                     atubulin_cropped = aligned_atubulin[y_min:y_max, x_min:x_max]
-                    
-#                    print("Aligned and cropped DAPI:")
-#                    display_image(DAPI_cropped)                   
+                                     
                     
                     # Continue by flipping the cropped images to get the area of highest pixel intensity in a corner.
                     # Flip cropped images vertically so total DAPI intensity is higher in top half
@@ -282,13 +273,17 @@ def preprocess_high_res():
                     channels_DAPI_brighter_top = flip_all_if_brighter(channels_to_flip, y_cent, 'vertical') # list of all flipped images
                     channels_DAPI_brighter_left = flip_all_if_brighter(channels_DAPI_brighter_top, x_cent, 'horizontal') # list of all flipped images
                 
-                    # Want to save these aligned, cropped, and brightness-flipped images to a folder for analysis.
+                    # These are aligned, cropped, and brightness-flipped images.
                     DAPI_processed = channels_DAPI_brighter_left[0]
                     atubulin_processed = channels_DAPI_brighter_left[1]
                     
                     print("Processed DAPI:")
                     display_image(DAPI_processed)
 
+                    # Want to save these aligned, cropped, and brightness-flipped images to a folder for analysis.
+                    parent = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+                    DAPI_path = os.path.join(parent, "High_Res_Input_Images_Processed", "DAPI_%d.tif" % i)
+                    atubulin_path = os.path.join(parent, "High_Res_Input_Images_Processed", "atubulin_%d.tif" % i)
                     
                     io.imsave(DAPI_path, DAPI_processed) 
                     io.imsave(atubulin_path, atubulin_processed) 
