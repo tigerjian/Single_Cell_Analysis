@@ -168,12 +168,8 @@ def preprocess_high_res():
 #         - flips images so that brightest DAPI in upper left (flipped vertically, then horizontally)
 #     Note: saves channels separately to preserve bit depth
 # =============================================================================
-<<<<<<< HEAD
-    for i in range(1, file.num_high_res + 1):
-=======
     
     for i in range(1,file.num_high_res + 1):
->>>>>>> gwen
         if i == 0: # edit this if removed points from point list manually before acquisition, or somehow missing points
             continue
         else:
